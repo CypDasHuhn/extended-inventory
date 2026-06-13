@@ -1,0 +1,154 @@
+package dev.cypdashuhn.extendedinventory.actions
+
+import dev.cypdashuhn.extendedinventory.db.AnchorManager
+import dev.cypdashuhn.extendedinventory.db.InventoryManager
+import dev.cypdashuhn.extendedinventory.db.ItemManager
+import dev.cypdashuhn.extendedinventory.db.PlayerProfileManager
+import dev.cypdashuhn.extendedinventory.db.PlayerProfileStatus
+import dev.cypdashuhn.extendedinventory.db.ProfileManager
+import dev.cypdashuhn.extendedinventory.db.ProfileOpenness
+import dev.cypdashuhn.extendedinventory.db.SlotCache
+import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
+
+object InventoryActions {
+    fun getItem(profileId: Int, x: Int, y: Int): ItemStack? {
+        val slot = SlotCache.getSlot(profileId, x, y) ?: return null
+        if (slot.itemId != null) return ItemManager.getItem(slot.itemId)
+        return null
+    }
+
+    fun setItem(profileId: Int, x: Int, y: Int, item: ItemStack?) {
+        if (item == null || item.type.isAir) {
+            val existing = SlotCache.getSlot(profileId, x, y)
+            if (existing?.itemId != null) {
+                ItemManager.deleteIfUnused(existing.itemId)
+            }
+            SlotCache.removeSlot(profileId, x, y)
+        } else {
+            val itemId = ItemManager.store(item)
+            SlotCache.setItem(profileId, x, y, itemId)
+        }
+    }
+
+    fun copyToCursor(player: Player, profileId: Int, x: Int, y: Int) {
+        val item = getItem(profileId, x, y) ?: return
+        player.inventory.setItemInMainHand(item.clone())
+    }
+
+    fun groupDelete(profileId: Int, x1: Int, y1: Int, x2: Int, y2: Int) {
+        val minX = minOf(x1, x2)
+        val maxX = maxOf(x1, x2)
+        val minY = minOf(y1, y2)
+        val maxY = maxOf(y1, y2)
+        val positions = (minX..maxX).flatMap { x -> (minY..maxY).map { y -> x to y } }.toSet()
+        SlotCache.batchRemove(profileId, positions)
+    }
+
+    fun groupMove(profileId: Int, x1: Int, y1: Int, x2: Int, y2: Int, targetX: Int, targetY: Int): Boolean {
+        val minSrcX = minOf(x1, x2)
+        val maxSrcX = maxOf(x1, x2)
+        val minSrcY = minOf(y1, y2)
+        val maxSrcY = maxOf(y1, y2)
+
+        val sourceSlots = InventoryManager.getRegion(profileId, x1, y1, x2, y2)
+
+        val moveEntries = sourceSlots.mapNotNull { slot ->
+            val dx = slot.x - minSrcX
+            val dy = slot.y - minSrcY
+            val newX = targetX + dx
+            val newY = targetY + dy
+            if (slot.itemId != null) {
+                Triple(newX, newY, slot.itemId)
+            } else null
+        }
+
+        if (moveEntries.isEmpty()) return false
+
+        val sourcePositions = (minSrcX..maxSrcX).flatMap { x -> (minSrcY..maxSrcY).map { y -> x to y } }.toSet()
+        SlotCache.batchRemove(profileId, sourcePositions)
+        SlotCache.batchSetItems(profileId, moveEntries)
+        return true
+    }
+
+    fun getRegionSlots(profileId: Int, x1: Int, y1: Int, x2: Int, y2: Int): List<InventoryManager.SlotData> {
+        return InventoryManager.getRegion(profileId, x1, y1, x2, y2)
+    }
+}
+
+object ProfileActions {
+    fun createProfile(player: Player, name: String): Int {
+        val profileId = ProfileManager.create(name, player)
+        PlayerProfileManager.assign(player, profileId, PlayerProfileStatus.PRIMARY)
+        return profileId
+    }
+
+    fun switchProfile(player: Player, profileId: Int) {
+        val status = PlayerProfileManager.getStatus(player, profileId)
+        if (status == null) {
+            PlayerProfileManager.subscribe(player, profileId)
+        }
+        PlayerProfileManager.setPrimary(player, profileId)
+    }
+
+    fun setDefault(player: Player, profileId: Int) {
+        PlayerProfileManager.setPrimary(player, profileId)
+    }
+
+    fun subscribe(player: Player, profileId: Int) {
+        PlayerProfileManager.subscribe(player, profileId)
+    }
+
+    fun invite(player: Player, profileId: Int, targetPlayer: Player, status: PlayerProfileStatus) {
+        val callerStatus = PlayerProfileManager.getStatus(player, profileId)
+        if (callerStatus != PlayerProfileStatus.PRIMARY && callerStatus != PlayerProfileStatus.WRITE_READ) return
+        PlayerProfileManager.assign(targetPlayer, profileId, status)
+    }
+
+    fun setOpenness(profileId: Int, openness: ProfileOpenness) {
+        ProfileManager.setOpenness(profileId, openness)
+    }
+}
+
+object AnchorActions {
+    fun addAnchor(profileId: Int, name: String, x: Int, y: Int): Int =
+        AnchorManager.create(profileId, name, x, y)
+
+    fun deleteAnchor(player: Player, profileId: Int, name: String): Boolean {
+        val status = PlayerProfileManager.getStatus(player, profileId)
+        if (status != PlayerProfileStatus.PRIMARY && status != PlayerProfileStatus.WRITE_READ) return false
+        val anchor = AnchorManager.findByName(profileId, name) ?: return false
+        AnchorManager.delete(anchor.id)
+        return true
+    }
+
+    fun renameAnchor(player: Player, profileId: Int, oldName: String, newName: String): Boolean {
+        val status = PlayerProfileManager.getStatus(player, profileId)
+        if (status != PlayerProfileStatus.PRIMARY && status != PlayerProfileStatus.WRITE_READ) return false
+        val anchor = AnchorManager.findByName(profileId, oldName) ?: return false
+        AnchorManager.rename(anchor.id, newName)
+        return true
+    }
+
+    fun getAnchorInfo(profileId: Int, name: String): AnchorManager.AnchorData? =
+        AnchorManager.findByName(profileId, name)
+}
+
+object CycleActions {
+    fun getCyclePositions(profileId: Int, x: Int, y: Int): List<Pair<Int, Int>> {
+        val slot = SlotCache.getSlot(profileId, x, y) ?: return emptyList()
+        val itemId = slot.itemId ?: return emptyList()
+        val materialName = ItemManager.getMaterialName(itemId) ?: return emptyList()
+        val allSlots = InventoryManager.allSlotsForMaterial(profileId, materialName)
+
+        val currentPos = x to y
+        return allSlots
+            .filter { it.x != x || it.y != y }
+            .map { it.x to it.y }
+            .sortedBy { (sx, sy) ->
+                val dx = sx - currentPos.first
+                val dy = sy - currentPos.second
+                dx * dx + dy * dy
+            }
+    }
+}
