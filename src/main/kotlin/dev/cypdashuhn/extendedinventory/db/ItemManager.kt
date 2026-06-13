@@ -48,9 +48,9 @@ object ItemManager {
 
     fun getItem(itemId: Int): ItemStack? = transaction {
         val row = Items.selectAll().where { Items.id eq itemId }.firstOrNull() ?: return@transaction null
-        val map: Map<String, Any> = gson.fromJson(row[Items.serializedItem], Map::class.java)
         @Suppress("UNCHECKED_CAST")
-        ItemStack.deserialize(map as Map<String, Any>)
+        val map = gson.fromJson<Map<String, Any>>(row[Items.serializedItem], Map::class.java) as Map<String, Any>
+        ItemStack.deserialize(map)
     }
 
     fun getMaterialName(itemId: Int): String? = transaction {

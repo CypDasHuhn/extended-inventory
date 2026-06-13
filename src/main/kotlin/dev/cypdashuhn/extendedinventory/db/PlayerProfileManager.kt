@@ -1,5 +1,6 @@
 package dev.cypdashuhn.extendedinventory.db
 
+import dev.cypdashuhn.extendedinventory.util.playerId
 import org.bukkit.entity.Player
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -27,12 +28,6 @@ object PlayerProfileManager {
         val profileId: Int,
         val status: PlayerProfileStatus,
     )
-
-    private fun playerId(player: Player): Int {
-        val pm = dev.cypdashuhn.extendedinventory.ExtendedInventoryPlugin.playerManager
-        return pm.playerByUUID(player.uniqueId.toString())?.id?.value
-            ?: throw IllegalStateException("Player ${player.name} not registered in PlayerManager")
-    }
 
     fun assign(player: Player, profileId: Int, status: PlayerProfileStatus = PlayerProfileStatus.READ_ONLY) {
         val pid = playerId(player)

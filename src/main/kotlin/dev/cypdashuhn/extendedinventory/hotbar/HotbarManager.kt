@@ -2,8 +2,11 @@ package dev.cypdashuhn.extendedinventory.hotbar
 
 import dev.cypdashuhn.extendedinventory.db.AnchorManager
 import dev.cypdashuhn.extendedinventory.db.BufferManager
+import dev.cypdashuhn.extendedinventory.db.InventoryManager
 import dev.cypdashuhn.extendedinventory.db.ItemManager
 import dev.cypdashuhn.extendedinventory.db.PlayerProfileManager
+import dev.cypdashuhn.extendedinventory.db.PlayerProfileStatus
+import dev.cypdashuhn.extendedinventory.db.ProfileManager
 import dev.cypdashuhn.extendedinventory.db.SlotCache
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -47,8 +50,8 @@ object HotbarManager {
             return primaryId
         }
 
-        val profileId = dev.cypdashuhn.extendedinventory.db.ProfileManager.create("default", player)
-        PlayerProfileManager.assign(player, profileId, dev.cypdashuhn.extendedinventory.db.PlayerProfileStatus.PRIMARY)
+        val profileId = ProfileManager.create("default", player)
+        PlayerProfileManager.assign(player, profileId, PlayerProfileStatus.PRIMARY)
         state.profileId = profileId
         return profileId
     }
@@ -162,7 +165,7 @@ object HotbarManager {
 
     fun resolveAnchorJump(item: ItemStack?): Pair<Int, Int>? {
         if (!isAnchorItem(item)) return null
-        val pdc = item.itemMeta?.persistentDataContainer ?: return null
+        val pdc = item?.itemMeta?.persistentDataContainer ?: return null
         val x = pdc.get(ANCHOR_X_KEY, PersistentDataType.INTEGER) ?: return null
         val y = pdc.get(ANCHOR_Y_KEY, PersistentDataType.INTEGER) ?: return null
         return x to y

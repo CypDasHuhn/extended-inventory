@@ -10,7 +10,7 @@ import dev.cypdashuhn.extendedinventory.hotbar.HotbarManager
 import dev.cypdashuhn.extendedinventory.ui.ChatInputManager
 import dev.cypdashuhn.extendedinventory.ui.inventory.InventoryInterface
 import dev.cypdashuhn.extendedinventory.ui.inventory.InventoryInterfaceContext
-import dev.cypdashuhn.extendedinventory.ui.mm
+import dev.cypdashuhn.extendedinventory.util.mm
 import dev.rooster.core.util.createItem
 import dev.rooster.ui.interfaces.ClickInfo
 import dev.rooster.ui.interfaces.InterfaceInfo
@@ -89,19 +89,19 @@ object ProfileInterface : ScrollInterface<ProfileInterfaceContext, ProfileEntryD
                 ChatInputManager.awaitInput(click.player, "<gray>Type the profile <white>name<gray>:") { name ->
                     if (name.isBlank()) {
                         refreshProfiles(click.player, context)
-                        ProfileInterface.openInventory(click.player, context)
+                        ProfileInterface.openRefreshed(click.player, context)
                         return@awaitInput
                     }
                     ProfileActions.createProfile(click.player, name.trim())
                     refreshProfiles(click.player, context)
-                    ProfileInterface.openInventory(click.player, context)
+                    ProfileInterface.openRefreshed(click.player, context)
                 }
             },
     )
 
-    override fun openInventory(player: Player, context: ProfileInterfaceContext): org.bukkit.inventory.Inventory {
+    fun openRefreshed(player: Player, context: ProfileInterfaceContext): org.bukkit.inventory.Inventory {
         refreshProfiles(player, context)
-        return super.openInventory(player, context)
+        return openInventory(player, context)
     }
 }
 
@@ -128,14 +128,17 @@ object ProfileDetailInterface : ScrollInterface<ProfileDetailContext, ProfileEnt
         item()
             .atSlot(6, 1)
             .displayAs(createItem(Material.BARRIER, mm("<red>Back"), listOf(mm("<gray>Return to profile list."))))
-            .routeTo(ProfileInterface) { ProfileInterfaceContext() },
+            .onClick { ProfileInterface.openRefreshed(click.player, ProfileInterfaceContext()) },
 
         item()
             .atSlot(2, 4)
-            .displayAs(createItem(Material.BOOK, mm("<green>Info"), listOf(
-                mm("<white>Name: ${context.profileName}"),
-                mm("<white>Openness: ${context.openness.name.lowercase()}"),
-            ))),
+            .displayAs {
+                val ctx = context
+                createItem(Material.BOOK, mm("<green>Info"), listOf(
+                    mm("<white>Name: ${ctx.profileName}"),
+                    mm("<white>Openness: ${ctx.openness.name.lowercase()}"),
+                ))
+            },
 
         item()
             .atSlot(2, 5)
@@ -162,16 +165,19 @@ object ProfileDetailInterface : ScrollInterface<ProfileDetailContext, ProfileEnt
                 ChatInputManager.awaitInput(click.player, "<gray>Type the new <white>name<gray>:") { newName ->
                     if (newName.isBlank()) return@awaitInput
                     ProfileManager.rename(context.profileId, newName.trim())
-                    ProfileInterface.openInventory(click.player, ProfileInterfaceContext())
+                    ProfileInterface.openRefreshed(click.player, ProfileInterfaceContext())
                 }
             },
 
         item()
             .atSlot(3, 4)
-            .displayAs(createItem(Material.REPEATER, mm("<yellow>Openness"), listOf(
-                mm("<gray>Current: ${context.openness.name.lowercase()}"),
-                mm("<yellow>Click to cycle: PRIVATE → PUBLIC_READ → PUBLIC_WRITE"),
-            ))).onClick {
+            .displayAs {
+                val ctx = context
+                createItem(Material.REPEATER, mm("<yellow>Openness"), listOf(
+                    mm("<gray>Current: ${ctx.openness.name.lowercase()}"),
+                    mm("<yellow>Click to cycle: PRIVATE → PUBLIC_READ → PUBLIC_WRITE"),
+                ))
+            }.onClick {
                 val next = when (context.openness) {
                     ProfileOpenness.PRIVATE -> ProfileOpenness.PUBLIC_READ
                     ProfileOpenness.PUBLIC_READ -> ProfileOpenness.PUBLIC_WRITE
@@ -193,7 +199,7 @@ object ProfileDetailInterface : ScrollInterface<ProfileDetailContext, ProfileEnt
             .displayAs(createItem(Material.LAVA_BUCKET, mm("<red>Delete"), listOf(mm("<gray>Delete this profile."))))
             .onClick {
                 ProfileManager.delete(context.profileId)
-                ProfileInterface.openInventory(click.player, ProfileInterfaceContext())
+                ProfileInterface.openRefreshed(click.player, ProfileInterfaceContext())
             },
     )
 }

@@ -1,8 +1,8 @@
 package dev.cypdashuhn.extendedinventory.ui
 
+import dev.cypdashuhn.extendedinventory.util.mm
 import dev.rooster.core.RoosterCore
 import io.papermc.paper.event.player.AsyncChatEvent
-import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -12,13 +12,12 @@ import java.util.concurrent.ConcurrentHashMap
 
 object ChatInputManager : Listener {
     private val listeners = ConcurrentHashMap<UUID, (String) -> Unit>()
-    private val mm = MiniMessage.miniMessage()
 
     fun awaitInput(player: Player, prompt: String? = null, callback: (String) -> Unit) {
         listeners[player.uniqueId] = callback
         RoosterCore.plugin.server.scheduler.runTask(RoosterCore.plugin, Runnable {
             player.closeInventory()
-            if (prompt != null) player.sendMessage(mm.deserialize(prompt))
+            if (prompt != null) player.sendMessage(mm(prompt))
         })
     }
 

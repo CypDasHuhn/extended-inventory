@@ -2,16 +2,17 @@ package dev.cypdashuhn.extendedinventory.ui.inventory
 
 import dev.cypdashuhn.extendedinventory.actions.InventoryActions
 import dev.cypdashuhn.extendedinventory.db.AnchorManager
-import dev.cypdashuhn.extendedinventory.db.InventoryManager
 import dev.cypdashuhn.extendedinventory.db.ItemManager
 import dev.cypdashuhn.extendedinventory.db.SlotCache
 import dev.cypdashuhn.extendedinventory.hotbar.HotbarManager
 import dev.cypdashuhn.extendedinventory.ui.ChatInputManager
 import dev.cypdashuhn.extendedinventory.ui.anchor.AnchorListContext
 import dev.cypdashuhn.extendedinventory.ui.anchor.AnchorListInterface
-import dev.cypdashuhn.extendedinventory.ui.mm
+import dev.cypdashuhn.extendedinventory.util.mm
+import dev.cypdashuhn.extendedinventory.util.T
 import dev.cypdashuhn.extendedinventory.ui.profile.ProfileInterfaceContext
 import dev.cypdashuhn.extendedinventory.ui.profile.ProfileInterface
+import dev.cypdashuhn.extendedinventory.util.region
 import dev.rooster.core.util.createItem
 import dev.rooster.ui.interfaces.ClickInfo
 import dev.rooster.ui.interfaces.InterfaceInfo
@@ -209,11 +210,8 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         val a = ctx.cornerA ?: return emptySet()
         val b = ctx.cornerB ?: return emptySet()
         val t = ctx.targetCorner ?: return emptySet()
-        val minX = minOf(a.first, b.first)
-        val maxX = maxOf(a.first, b.first)
-        val minY = minOf(a.second, b.second)
-        val maxY = maxOf(a.second, b.second)
-        return (minX..maxX).flatMap { sx -> (minY..maxY).map { sy -> t.first + (sx - minX) to t.second + (sy - minY) } }.toSet()
+        val r = region(a.first, a.second, b.first, b.second)
+        return (r.minX..r.maxX).flatMap { sx -> (r.minY..r.maxY).map { sy -> t.first + (sx - r.minX) to t.second + (sy - r.minY) } }.toSet()
     }
 
     override fun getInterfaceItems(): List<InterfaceItem<InventoryInterfaceContext>> = listOf(
@@ -383,7 +381,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
     private fun profileListItem() = item()
         .atSlot(6, 8)
         .displayAs(createItem(Material.PLAYER_HEAD, mm("<white>Profiles"), listOf(mm("<gray>Manage profiles."))))
-        .routeTo(ProfileInterface) { ProfileInterfaceContext() }
+        .onClick { ProfileInterface.openRefreshed(click.player, ProfileInterfaceContext()) }
 
     private fun cornerAItem() = item()
         .atSlots(contentArea.allValidSlots())

@@ -8,6 +8,7 @@ import dev.cypdashuhn.extendedinventory.db.PlayerProfileStatus
 import dev.cypdashuhn.extendedinventory.db.ProfileManager
 import dev.cypdashuhn.extendedinventory.db.ProfileOpenness
 import dev.cypdashuhn.extendedinventory.db.SlotCache
+import dev.cypdashuhn.extendedinventory.util.region
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
@@ -37,25 +38,17 @@ object InventoryActions {
     }
 
     fun groupDelete(profileId: Int, x1: Int, y1: Int, x2: Int, y2: Int) {
-        val minX = minOf(x1, x2)
-        val maxX = maxOf(x1, x2)
-        val minY = minOf(y1, y2)
-        val maxY = maxOf(y1, y2)
-        val positions = (minX..maxX).flatMap { x -> (minY..maxY).map { y -> x to y } }.toSet()
-        SlotCache.batchRemove(profileId, positions)
+        val r = region(x1, y1, x2, y2)
+        SlotCache.batchRemove(profileId, r.positions)
     }
 
     fun groupMove(profileId: Int, x1: Int, y1: Int, x2: Int, y2: Int, targetX: Int, targetY: Int): Boolean {
-        val minSrcX = minOf(x1, x2)
-        val maxSrcX = maxOf(x1, x2)
-        val minSrcY = minOf(y1, y2)
-        val maxSrcY = maxOf(y1, y2)
-
+        val r = region(x1, y1, x2, y2)
         val sourceSlots = InventoryManager.getRegion(profileId, x1, y1, x2, y2)
 
         val moveEntries = sourceSlots.mapNotNull { slot ->
-            val dx = slot.x - minSrcX
-            val dy = slot.y - minSrcY
+            val dx = slot.x - r.minX
+            val dy = slot.y - r.minY
             val newX = targetX + dx
             val newY = targetY + dy
             if (slot.itemId != null) {
@@ -65,8 +58,7 @@ object InventoryActions {
 
         if (moveEntries.isEmpty()) return false
 
-        val sourcePositions = (minSrcX..maxSrcX).flatMap { x -> (minSrcY..maxSrcY).map { y -> x to y } }.toSet()
-        SlotCache.batchRemove(profileId, sourcePositions)
+        SlotCache.batchRemove(profileId, r.positions)
         SlotCache.batchSetItems(profileId, moveEntries)
         return true
     }

@@ -7,7 +7,7 @@ import dev.cypdashuhn.extendedinventory.ui.ChatInputManager
 import dev.cypdashuhn.extendedinventory.ui.inventory.InventoryInterface
 import dev.cypdashuhn.extendedinventory.ui.inventory.InventoryInterfaceContext
 import dev.cypdashuhn.extendedinventory.ui.inventory.InterfaceMode
-import dev.cypdashuhn.extendedinventory.ui.mm
+import dev.cypdashuhn.extendedinventory.util.mm
 import dev.rooster.core.util.createItem
 import dev.rooster.ui.interfaces.ClickInfo
 import dev.rooster.ui.interfaces.InterfaceInfo
@@ -116,16 +116,22 @@ object AnchorDetailInterface : ScrollInterface<AnchorDetailContext, AnchorEntryD
 
         item()
             .atSlot(3, 4)
-            .displayAs(createItem(Material.ENDER_PEARL, mm("<green>Info"), listOf(
-                mm("<white>Name: ${context.anchorName}"),
-                mm("<white>Position: (${context.anchorX}, ${context.anchorY})"),
-            ))),
+            .displayAs {
+                val ctx = context
+                createItem(Material.ENDER_PEARL, mm("<green>Info"), listOf(
+                    mm("<white>Name: ${ctx.anchorName}"),
+                    mm("<white>Position: (${ctx.anchorX}, ${ctx.anchorY})"),
+                ))
+            },
 
         item()
             .atSlot(3, 5)
-            .displayAs(createItem(Material.COMPASS, mm("<green>Jump To"), listOf(
-                mm("<gray>Jump to (${context.anchorX}, ${context.anchorY})"),
-            ))).onClick {
+            .displayAs {
+                val ctx = context
+                createItem(Material.COMPASS, mm("<green>Jump To"), listOf(
+                    mm("<gray>Jump to (${ctx.anchorX}, ${ctx.anchorY})"),
+                ))
+            }.onClick {
                 HotbarManager.jumpTo(click.player, context.anchorX, context.anchorY)
                 InventoryInterface.openInventory(click.player, InventoryInterfaceContext(context.profileId, context.anchorX, context.anchorY))
             },
