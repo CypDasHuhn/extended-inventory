@@ -78,7 +78,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
     private fun slotToGrid(ctx: InventoryInterfaceContext, slot: Int): Pair<Int, Int> {
         val col = slot % 9
         val row = slot / 9
-        return ctx.centerX + (col - 4) to ctx.centerY + (row - 2) + ctx.position
+        return ctx.centerX + (col - 4) to ctx.centerY + (row - 2)
     }
 
     private fun isGroupPickMode(mode: InterfaceMode): Boolean = mode in setOf(
@@ -219,6 +219,8 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         groupDeleteItem(),
         groupMoveItem(),
         editModeItem(),
+        saveEditsItem(),
+        discardEditsItem(),
         cancelGroupItem(),
         setAnchorItem(),
         materializeAnchorItem(),
@@ -240,7 +242,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
 
     private fun groupDeleteItem() = item()
         .atSlot(6, 2)
-        .usedWhen { !inGroupMode(context) && !cornersSet(context) }
+        .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) }
         .displayAs(createItem(Material.LAVA_BUCKET, mm("<red>Group Delete"), listOf(
             mm("<gray>Select two corners to delete"),
             mm("<gray>all items in the region."),
@@ -253,7 +255,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
 
     private fun groupMoveItem() = item()
         .atSlot(6, 3)
-        .usedWhen { !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
+        .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
         .displayAs(createItem(Material.PISTON, mm("<green>Group Move"), listOf(
             mm("<gray>Select two corners for source,"),
             mm("<gray>then a third for target."),
@@ -266,17 +268,30 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
 
     private fun editModeItem() = item()
         .atSlot(6, 4)
-        .usedWhen { !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
-        .displayAs {
-            val isEdit = context.mode == InterfaceMode.EDITING
-            createItem(
-                if (isEdit) Material.WRITABLE_BOOK else Material.BOOK,
-                mm(if (isEdit) "<green>Editing" else "<white>Edit Mode"),
-                listOf(mm("<gray>Click to toggle edit mode.")),
-            )
-        }.onClick {
-            context.mode = if (context.mode == InterfaceMode.EDITING) InterfaceMode.NORMAL else InterfaceMode.EDITING
-            if (context.mode == InterfaceMode.NORMAL) savePendingChanges(click.player, context)
+        .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
+        .displayAs(createItem(Material.BOOK, mm("<white>Edit Mode"), listOf(mm("<gray>Click to edit inventory slots."))))
+        .onClick {
+            context.mode = InterfaceMode.EDITING
+            InventoryInterface.openInventory(click.player, context)
+        }
+
+    private fun saveEditsItem() = item()
+        .atSlot(6, 3)
+        .usedWhen { context.mode == InterfaceMode.EDITING }
+        .displayAs(createItem(Material.WRITABLE_BOOK, mm("<green>Save"), listOf(mm("<gray>Save changes and exit edit mode."))))
+        .onClick {
+            savePendingChanges(click.player, context)
+            context.mode = InterfaceMode.NORMAL
+            InventoryInterface.openInventory(click.player, context)
+        }
+
+    private fun discardEditsItem() = item()
+        .atSlot(6, 4)
+        .usedWhen { context.mode == InterfaceMode.EDITING }
+        .displayAs(createItem(Material.BARRIER, mm("<red>Discard"), listOf(mm("<gray>Discard changes and exit edit mode."))))
+        .onClick {
+            context.pendingChanges.clear()
+            context.mode = InterfaceMode.NORMAL
             InventoryInterface.openInventory(click.player, context)
         }
 
@@ -292,7 +307,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
 
     private fun setAnchorItem() = item()
         .atSlot(6, 5)
-        .usedWhen { !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
+        .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
         .displayAs(createItem(Material.ENDER_PEARL, mm("<white>Set Anchor"), listOf(mm("<gray>Click a slot to create an anchor."))))
         .onClick {
             context.mode = InterfaceMode.SETTING_ANCHOR
@@ -301,7 +316,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
 
     private fun materializeAnchorItem() = item()
         .atSlot(6, 6)
-        .usedWhen { !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
+        .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
         .displayAs(createItem(Material.ITEM_FRAME, mm("<white>Materialize Anchor"), listOf(mm("<gray>Get a materialized anchor item."))))
         .onClick {
             context.mode = InterfaceMode.MATERIALIZING_ANCHOR
@@ -379,7 +394,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         .routeTo(AnchorListInterface) { AnchorListContext(context.profileId) }
 
     private fun profileListItem() = item()
-        .atSlot(6, 8)
+        .atSlot(6, 0)
         .displayAs(createItem(Material.PLAYER_HEAD, mm("<white>Profiles"), listOf(mm("<gray>Manage profiles."))))
         .onClick { ProfileInterface.openRefreshed(click.player, ProfileInterfaceContext()) }
 
