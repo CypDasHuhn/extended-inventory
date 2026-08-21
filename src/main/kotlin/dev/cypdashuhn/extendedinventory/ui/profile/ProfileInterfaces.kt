@@ -49,7 +49,6 @@ private fun refreshProfiles(player: Player, context: ProfileInterfaceContext) {
 }
 
 object ProfileInterface : ScrollInterface<ProfileInterfaceContext, ProfileEntryData>(
-    "ProfileList",
     handler { ProfileInterfaceContext() },
     ScrollInterfaceOptions<ProfileInterfaceContext>().apply {
         inventoryTitle = { _, _ -> mm("<white><bold>Profiles") }
@@ -113,7 +112,6 @@ class ProfileDetailContext(
 ) : ScrollContext()
 
 object ProfileDetailInterface : ScrollInterface<ProfileDetailContext, ProfileEntryData>(
-    "ProfileDetail",
     handler { ProfileDetailContext(0, "", 0, ProfileOpenness.PRIVATE) },
     ScrollInterfaceOptions<ProfileDetailContext>().apply {
         inventoryTitle = { _, ctx -> mm("<white><bold>Profile: ${ctx.profileName}") }
@@ -215,7 +213,6 @@ data class PlayerInviteData(
 )
 
 object PlayerInviteInterface : ScrollInterface<PlayerInviteContext, PlayerInviteData>(
-    "PlayerInvite",
     handler { PlayerInviteContext(0) },
     ScrollInterfaceOptions<PlayerInviteContext>().apply {
         inventoryTitle = { _, _ -> mm("<white><bold>Player Access") }

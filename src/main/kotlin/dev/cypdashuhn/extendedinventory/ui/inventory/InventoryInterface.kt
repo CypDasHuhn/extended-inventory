@@ -55,7 +55,6 @@ data class GridSlotData(
 )
 
 object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotData>(
-    "ExtendedInventory",
     handler { InventoryInterfaceContext(0) },
     ScrollInterfaceOptions<InventoryInterfaceContext>().apply {
         inventoryTitle = { _, ctx ->
@@ -155,7 +154,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
     private fun ClickInfo<InventoryInterfaceContext>.handleEditClick(data: GridSlotData, context: InventoryInterfaceContext) {
         val cursor = click.event.cursor
         context.pendingChanges[data.x to data.y] = if (cursor != null && !cursor.type.isAir) cursor.clone() else null
-        InventoryInterface.openInventory(click.player, context)
+        openInventory(click.player, context)
     }
 
     private fun ClickInfo<InventoryInterfaceContext>.handleSetAnchorClick(data: GridSlotData, context: InventoryInterfaceContext) {
@@ -282,7 +281,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         .onClick {
             savePendingChanges(click.player, context)
             context.mode = InterfaceMode.NORMAL
-            InventoryInterface.openInventory(click.player, context)
+            openInventory(click.player, context)
         }
 
     private fun discardEditsItem() = item()

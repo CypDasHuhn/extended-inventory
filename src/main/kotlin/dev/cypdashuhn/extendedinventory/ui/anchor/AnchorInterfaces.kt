@@ -33,7 +33,6 @@ data class AnchorEntryData(
 )
 
 object AnchorListInterface : ScrollInterface<AnchorListContext, AnchorEntryData>(
-    "AnchorList",
     handler { AnchorListContext(0) },
     ScrollInterfaceOptions<AnchorListContext>().apply {
         inventoryTitle = { _, _ -> mm("<white><bold>Anchors") }
@@ -93,7 +92,6 @@ class AnchorDetailContext(
 ) : ScrollContext()
 
 object AnchorDetailInterface : ScrollInterface<AnchorDetailContext, AnchorEntryData>(
-    "AnchorDetail",
     handler { AnchorDetailContext(0, 0, "", 0, 0) },
     ScrollInterfaceOptions<AnchorDetailContext>().apply {
         inventoryTitle = { _, ctx -> mm("<white><bold>Anchor: ${ctx.anchorName}") }
