@@ -2,8 +2,8 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     java
-    id("xyz.jpenilla.run-paper") version "2.3.1"
-    kotlin("jvm") version "2.2.0"
+    id("xyz.jpenilla.run-paper") version "3.0.2"
+    kotlin("jvm") version "2.4.10"
     id("com.gradleup.shadow") version "8.3.6"
     id("net.minecrell.plugin-yml.bukkit") version "0.6.0"
 }
@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:26.2.build.112-stable")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
     bukkitLibrary("com.google.code.gson:gson:2.10.1")
@@ -48,7 +48,7 @@ dependencies {
 
     implementation("org.xerial:sqlite-jdbc:3.45.2.0")
 
-    bukkitLibrary("org.jetbrains.kotlin:kotlin-stdlib:2.0.20")
+    bukkitLibrary("org.jetbrains.kotlin:kotlin-stdlib:2.4.10")
 
     implementation("dev.jorel:commandapi-paper-shade:11.2.0")
 
@@ -59,7 +59,7 @@ dependencies {
     implementation("dev.rooster.ui.sql:RoosterUISql:1.0-SNAPSHOT")
 }
 
-val targetJavaVersion = 21
+val targetJavaVersion = 25
 kotlin {
     jvmToolchain(targetJavaVersion)
 }
@@ -67,7 +67,7 @@ kotlin {
 bukkit {
     name = "ExtendedInventory"
     main = "dev.cypdashuhn.extendedinventory.ExtendedInventoryPlugin"
-    apiVersion = "1.21.10"
+    apiVersion = "26.2"
 
     commands {
     }
@@ -78,7 +78,7 @@ bukkit {
 
 tasks {
     runServer {
-        minecraftVersion("1.21.10")
+        minecraftVersion("26.2")
         jvmArgs("-Dkotlinx.coroutines.debug=off")
     }
 }
