@@ -3,26 +3,25 @@ package dev.cypdashuhn.extendedinventory.commands
 import dev.cypdashuhn.extendedinventory.hotbar.HotbarManager
 import dev.cypdashuhn.extendedinventory.ui.inventory.InventoryInterface
 import dev.cypdashuhn.extendedinventory.ui.inventory.InventoryInterfaceContext
-import dev.jorel.commandapi.CommandTree
-import dev.jorel.commandapi.executors.PlayerCommandExecutor
+import dev.rooster.commands.*
 
-fun ex() {
-    CommandTree("ex")
-        .executesPlayer(PlayerCommandExecutor { sender, _ ->
-            val state = HotbarManager.getState(sender)
-            val profileId = HotbarManager.ensureProfile(sender)
-            InventoryInterface.openInventory(sender, InventoryInterfaceContext(profileId, state.x, state.y))
-        })
-        .then(buildJumpToNode())
-        .then(buildCurrentPositionNode())
-        .then(buildModeNode())
-        .then(buildDirectionNode("up", 0, -1))
-        .then(buildDirectionNode("down", 0, 1))
-        .then(buildDirectionNode("left", -1, 0))
-        .then(buildDirectionNode("right", 1, 0))
-        .then(buildCycleNode())
-        .then(buildProfileNodes())
-        .then(buildBufferNode())
-        .then(buildAnchorNodes())
-        .register()
+fun CommandsScope.registerCommands() {
+    command("ex") {
+        onExecute {
+            val state = HotbarManager.getState(player)
+            val profileId = HotbarManager.ensureProfile(player)
+            InventoryInterface.openInventory(player, InventoryInterfaceContext(profileId, state.x, state.y))
+        }
+        jumpTo()
+        currentPosition()
+        mode()
+        direction("up", 0, -1)
+        direction("down", 0, 1)
+        direction("left", -1, 0)
+        direction("right", 1, 0)
+        cycle()
+        profiles()
+        buffer()
+        anchors()
+    }
 }

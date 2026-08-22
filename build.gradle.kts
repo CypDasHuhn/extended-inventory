@@ -57,6 +57,8 @@ dependencies {
     implementation("dev.rooster.localization:rooster-localization:1.0-SNAPSHOT")
     implementation("dev.rooster.ui:RoosterUI:1.0-SNAPSHOT")
     implementation("dev.rooster.ui.sql:RoosterUISql:1.0-SNAPSHOT")
+    implementation("dev.rooster:rooster-commands:1.0.0")
+    implementation("dev.rooster:command-api:1.0.0")
 }
 
 val targetJavaVersion = 25
@@ -84,6 +86,7 @@ tasks {
 }
 
 tasks.withType<ShadowJar> {
+    mergeServiceFiles()
     manifest {
         attributes["paperweight-mappings-namespace"] = "mojang"
     }

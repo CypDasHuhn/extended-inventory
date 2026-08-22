@@ -4,30 +4,27 @@ import dev.cypdashuhn.extendedinventory.db.BufferManager
 import dev.cypdashuhn.extendedinventory.hotbar.HotbarManager
 import dev.cypdashuhn.extendedinventory.util.T
 import dev.cypdashuhn.extendedinventory.util.msg
-import dev.jorel.commandapi.arguments.Argument
-import dev.jorel.commandapi.arguments.ArgumentSuggestions
-import dev.jorel.commandapi.arguments.StringArgument
-import dev.jorel.commandapi.executors.PlayerCommandExecutor
-import org.bukkit.entity.Player
+import dev.rooster.commands.*
+import dev.rooster.commands.types.*
 
-internal fun <T> Argument<T>.suggestBufferNames(): Argument<T> =
-    replaceSuggestions(ArgumentSuggestions.strings { info ->
-        val player = info.sender() as? Player ?: return@strings emptyArray()
-        BufferManager.list(player).map { BufferManager.formatTimestamp(it.timestamp) }.toTypedArray()
-    })
+fun <T : CanSuggest> T.suggestBufferNames(): T = suggestStrings {
+    val player = playerOrNull ?: return@suggestStrings emptyList()
+    BufferManager.list(player).map { BufferManager.formatTimestamp(it.timestamp) }
+}
 
-internal fun buildBufferNode() = la("buffer").apply {
-    then(la("load").apply {
-        then(StringArgument("name").setOptional(true).suggestBufferNames().apply {
-            executesPlayer(PlayerCommandExecutor { sender, args ->
-                val name = args.get("name") as? String
-                val success = HotbarManager.loadBuffer(sender, name)
-                if (success) {
-                    sender.msg("${T.green}Buffer loaded.")
-                } else {
-                    sender.msg("${T.red}No buffer found.")
-                }
-            })
-        })
-    })
+fun ChildrenScope.buffer() = literal("buffer") {
+    literal("load") {
+        string("name").suggestBufferNames().optional()
+            .onMissing { loadBuffer(player, null) }
+            .onExecute { loadBuffer(player, arg<String>("name")) }
+    }
+}
+
+private fun loadBuffer(player: org.bukkit.entity.Player, name: String?) {
+    val success = HotbarManager.loadBuffer(player, name)
+    if (success) {
+        player.msg("${T.green}Buffer loaded.")
+    } else {
+        player.msg("${T.red}No buffer found.")
+    }
 }
