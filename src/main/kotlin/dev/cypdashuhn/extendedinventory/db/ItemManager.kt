@@ -1,6 +1,5 @@
 package dev.cypdashuhn.extendedinventory.db
 
-import com.google.gson.Gson
 import org.bukkit.inventory.ItemStack
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
@@ -12,6 +11,7 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
+import java.util.Base64
 
 object ItemManager {
     object Items : IntIdTable("ei_items") {
@@ -25,10 +25,8 @@ object ItemManager {
         val materialName by Items.materialName
     }
 
-    private val gson = Gson()
-
     fun store(itemStack: ItemStack): Int {
-        val serialized = gson.toJson(itemStack.serialize())
+        val serialized = encode(itemStack.serializeAsBytes())
         val material = itemStack.type.name
 
         return transaction {
@@ -48,9 +46,7 @@ object ItemManager {
 
     fun getItem(itemId: Int): ItemStack? = transaction {
         val row = Items.selectAll().where { Items.id eq itemId }.firstOrNull() ?: return@transaction null
-        @Suppress("UNCHECKED_CAST")
-        val map = gson.fromJson<Map<String, Any>>(row[Items.serializedItem], Map::class.java) as Map<String, Any>
-        ItemStack.deserialize(map)
+        ItemStack.deserializeBytes(decode(row[Items.serializedItem]))
     }
 
     fun getMaterialName(itemId: Int): String? = transaction {
@@ -63,7 +59,7 @@ object ItemManager {
     }
 
     fun updateItem(itemId: Int, itemStack: ItemStack) {
-        val serialized = gson.toJson(itemStack.serialize())
+        val serialized = encode(itemStack.serializeAsBytes())
         transaction {
             Items.update({ Items.id eq itemId }) {
                 it[serializedItem] = serialized
@@ -82,4 +78,8 @@ object ItemManager {
             }
         }
     }
+
+    internal fun encode(bytes: ByteArray): String = Base64.getEncoder().encodeToString(bytes)
+
+    internal fun decode(serialized: String): ByteArray = Base64.getDecoder().decode(serialized)
 }
