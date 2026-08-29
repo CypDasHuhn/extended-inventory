@@ -45,7 +45,7 @@ object InventoryActions {
 
     fun copyToCursor(player: Player, profileId: Int, x: Int, y: Int) {
         val item = getItem(profileId, x, y) ?: return
-        player.inventory.setItemInMainHand(item.clone())
+        player.setItemOnCursor(item.clone())
     }
 
     fun groupDelete(profileId: Int, x1: Int, y1: Int, x2: Int, y2: Int) {

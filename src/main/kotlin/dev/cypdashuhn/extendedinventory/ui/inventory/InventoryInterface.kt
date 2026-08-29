@@ -96,14 +96,17 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
 
     override fun contentProvider(id: Int, context: InventoryInterfaceContext): GridSlotData? {
         val (gridX, gridY) = slotToGrid(context, id)
+        val pos = gridX to gridY
 
-        val pending = context.pendingChanges[gridX to gridY]
-        if (pending != null) {
-            return GridSlotData(gridX, gridY, if (pending.type.isAir) null else pending)
+        if (context.pendingChanges.containsKey(pos)) {
+            val pending = context.pendingChanges[pos]
+            return GridSlotData(gridX, gridY, pending?.takeUnless { it.type.isAir })
         }
 
         val slot = SlotCache.getSlot(context.profileId, gridX, gridY)
-        if (slot == null) return null
+        if (slot == null) {
+            return GridSlotData(gridX, gridY, null)
+        }
 
         if (slot.anchorId != null) {
             val anchor = AnchorManager.findById(slot.anchorId)
@@ -115,7 +118,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
             return GridSlotData(gridX, gridY, ItemManager.getItem(slot.itemId))
         }
 
-        return null
+        return GridSlotData(gridX, gridY, null)
     }
 
     override fun contentDisplay(data: GridSlotData, context: InventoryInterfaceContext): InterfaceInfo<InventoryInterfaceContext>.() -> ItemStack = {
@@ -152,8 +155,18 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
     }
 
     private fun ClickInfo<InventoryInterfaceContext>.handleEditClick(data: GridSlotData, context: InventoryInterfaceContext) {
-        val cursor = click.event.cursor
-        context.pendingChanges[data.x to data.y] = if (cursor != null && !cursor.type.isAir) cursor.clone() else null
+        val pos = data.x to data.y
+        val cursorItem = click.player.itemOnCursor.takeUnless { it.type.isAir }
+        val currentItem = data.item
+
+        if (cursorItem != null) {
+            context.pendingChanges[pos] = cursorItem.clone()
+            click.player.setItemOnCursor(currentItem?.clone() ?: ItemStack.empty())
+        } else if (currentItem != null) {
+            context.pendingChanges[pos] = null
+            click.player.setItemOnCursor(currentItem.clone())
+        }
+
         openInventory(click.player, context)
     }
 
