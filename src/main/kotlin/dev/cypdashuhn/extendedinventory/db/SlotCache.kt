@@ -74,4 +74,8 @@ object SlotCache {
     fun invalidateRow(profileId: Int, y: Int) {
         rows[profileId]?.remove(y)
     }
+
+    fun clearAll() {
+        rows.clear()
+    }
 }

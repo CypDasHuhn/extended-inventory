@@ -39,7 +39,7 @@ dependencies {
     implementation("net.kyori:adventure-api:4.24.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation("com.github.seeseemelk:MockBukkit-v1.21:3.127.1")
+    testImplementation("io.papermc.paper:paper-api:26.2.build.112-stable")
 
     implementation("org.jetbrains.exposed:exposed-core:0.49.0")
     implementation("org.jetbrains.exposed:exposed-java-time:0.49.0")
