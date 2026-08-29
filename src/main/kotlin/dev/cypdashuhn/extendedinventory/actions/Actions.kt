@@ -21,14 +21,25 @@ object InventoryActions {
 
     fun setItem(profileId: Int, x: Int, y: Int, item: ItemStack?) {
         if (item == null || item.type.isAir) {
-            val existing = SlotCache.getSlot(profileId, x, y)
-            if (existing?.itemId != null) {
-                ItemManager.deleteIfUnused(existing.itemId)
-            }
-            SlotCache.removeSlot(profileId, x, y)
+            removeItemAt(profileId, x, y)
         } else {
-            val itemId = ItemManager.store(item)
-            SlotCache.setItem(profileId, x, y, itemId)
+            setItemId(profileId, x, y, ItemManager.store(item))
+        }
+    }
+
+    internal fun removeItemAt(profileId: Int, x: Int, y: Int) {
+        val previousItemId = SlotCache.getSlot(profileId, x, y)?.itemId
+        SlotCache.removeSlot(profileId, x, y)
+        if (previousItemId != null) {
+            ItemManager.deleteIfUnused(previousItemId)
+        }
+    }
+
+    internal fun setItemId(profileId: Int, x: Int, y: Int, itemId: Int) {
+        val previousItemId = SlotCache.getSlot(profileId, x, y)?.itemId
+        SlotCache.setItem(profileId, x, y, itemId)
+        if (previousItemId != null && previousItemId != itemId) {
+            ItemManager.deleteIfUnused(previousItemId)
         }
     }
 
