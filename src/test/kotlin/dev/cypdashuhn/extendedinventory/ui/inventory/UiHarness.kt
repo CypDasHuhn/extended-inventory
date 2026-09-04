@@ -8,6 +8,7 @@ import dev.rooster.ui.RoosterUI
 import dev.rooster.ui.context.InterfaceContextProvider
 import org.bukkit.Material
 import org.bukkit.event.inventory.ClickType
+import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.ItemStack
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -64,8 +65,13 @@ abstract class UiHarness {
 
     fun tick() = server.scheduler.performTicks(1L)
 
-    fun click(slot: Int, clickType: ClickType = ClickType.LEFT) {
+    fun click(slot: Int, clickType: ClickType = ClickType.LEFT): InventoryClickEvent =
         PlayerSimulation(player).simulateInventoryClick(player.openInventory, clickType, slot)
+
+    /** Clicks a slot in the player's own inventory (the bottom part of the view). */
+    fun clickBottom(slot: Int, clickType: ClickType = ClickType.LEFT): InventoryClickEvent {
+        val topSize = player.openInventory.topInventory.size
+        return PlayerSimulation(player).simulateInventoryClick(player.openInventory, clickType, topSize + slot)
     }
 
     fun setCursor(item: ItemStack) = player.setItemOnCursor(item)
@@ -88,6 +94,14 @@ abstract class UiHarness {
         action()
         tick()
         snapshot(label)
+    }
+
+    /** Like [step], but returns the value produced by [action] (e.g. the fired event). */
+    fun <T> stepEvent(label: String, action: () -> T): T {
+        val value = action()
+        tick()
+        snapshot(label)
+        return value
     }
 
     private fun snapshot(label: String) {

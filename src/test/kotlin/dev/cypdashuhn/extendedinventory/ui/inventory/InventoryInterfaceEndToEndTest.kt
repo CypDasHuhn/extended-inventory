@@ -5,6 +5,7 @@ import dev.rooster.ui.sql.SqlInterfaceContextProvider
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -146,6 +147,41 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
 
         assertEquals(Material.STONE, cursor()?.type, "normal-mode click should copy the item to the cursor")
         assertEquals(Material.STONE, UiHarness.dumpItem(1, 0, 0), "source item should remain stored")
+    }
+
+    @Test
+    fun `player inventory clicks are not intercepted by the interface`() {
+        open()
+        step("open")
+        step("enter edit mode (49)") { click(49) }
+
+        val event = stepEvent("click own inventory slot") { clickBottom(0) }
+
+        assertFalse(event.isCancelled, "player-inventory clicks must pass through to vanilla")
+        assertEquals(InterfaceMode.EDITING, context().mode, "interface must not react to a player-inventory click")
+        assertTrue(context().pendingChanges.isEmpty(), "no pending change should be recorded for a player-inventory click")
+    }
+
+    @Test
+    fun `grab item from own inventory and place it into the interface`() {
+        player.inventory.setItem(0, ItemStack(Material.STONE))
+
+        open()
+        step("open")
+        step("enter edit mode (49)") { click(49) }
+
+        // Pick up STONE from the player's own hotbar: vanilla moves it onto the cursor.
+        val event = stepEvent("click own hotbar slot 0") { clickBottom(0) }
+        assertFalse(event.isCancelled, "the pick-up click must not be cancelled")
+        setCursor(ItemStack(Material.STONE))
+        player.inventory.setItem(0, null)
+
+        step("place stone into interface (22)") { click(22) }
+        assertTrue(context().pendingChanges.containsKey("0:0"), "placed item should be staged at 0:0")
+
+        step("save (48)") { click(48) }
+
+        assertEquals(Material.STONE, UiHarness.dumpItem(1, 0, 0), "item should be persisted after save")
     }
 }
 
