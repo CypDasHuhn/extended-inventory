@@ -19,6 +19,7 @@ import dev.rooster.ui.interfaces.InterfaceInfo
 import dev.rooster.ui.interfaces.constructors.indexed_content.ScrollContext
 import dev.rooster.ui.interfaces.constructors.indexed_content.ScrollInterface
 import dev.rooster.ui.interfaces.constructors.indexed_content.ScrollInterfaceOptions
+import dev.rooster.ui.interfaces.constructors.indexed_content.ScrollerObject
 import dev.rooster.ui.interfaces.constructors.indexed_content.sizeFromRows
 import dev.rooster.ui.interfaces.handler
 import dev.rooster.ui.items.InterfaceItem
@@ -54,10 +55,14 @@ data class GridSlotData(
     val anchorName: String? = null,
 )
 
+private const val BOTTOM_BAR_START = 45
+
 object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotData>(
     handler { InventoryInterfaceContext(0) },
     ScrollInterfaceOptions<InventoryInterfaceContext>().apply {
         ignoreEmptySlots = false
+        scrollerObject = ScrollerObject.None()
+        cancelEvent = { it.context.mode != InterfaceMode.EDITING || it.click.slot >= BOTTOM_BAR_START }
         inventoryTitle = { _, ctx ->
             val suffix = when (ctx.mode) {
                 InterfaceMode.GROUP_DELETE_A -> " <dark_red>[Delete: pick corner A]"
@@ -141,8 +146,8 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
 
     override fun contentClick(data: GridSlotData, context: InventoryInterfaceContext): ClickInfo<InventoryInterfaceContext>.() -> Unit = {
         when (context.mode) {
+            InterfaceMode.EDITING -> Unit
             InterfaceMode.NORMAL -> handleNormalClick(data, context)
-            InterfaceMode.EDITING -> handleEditClick(data, context)
             InterfaceMode.SETTING_ANCHOR -> handleSetAnchorClick(data, context)
             InterfaceMode.MATERIALIZING_ANCHOR -> handleMaterializeClick(data, context)
             InterfaceMode.GROUP_DELETE_A, InterfaceMode.GROUP_DELETE_B -> handleDeleteCornerPick(data, context)
@@ -166,22 +171,6 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         if (data.item != null && !data.isAnchor) {
             InventoryActions.copyToCursor(click.player, context.profileId, data.x, data.y)
         }
-    }
-
-    private fun ClickInfo<InventoryInterfaceContext>.handleEditClick(data: GridSlotData, context: InventoryInterfaceContext) {
-        val key = pendingKey(data.x, data.y)
-        val cursorItem = click.player.itemOnCursor.takeUnless { it.type.isAir }
-        val currentItem = data.item
-
-        if (cursorItem != null) {
-            context.pendingChanges[key] = encodePendingItem(cursorItem)
-            click.player.setItemOnCursor(currentItem?.clone() ?: ItemStack.empty())
-        } else if (currentItem != null) {
-            context.pendingChanges[key] = ""
-            click.player.setItemOnCursor(currentItem.clone())
-        }
-
-        openInventory(click.player, context)
     }
 
     private fun ClickInfo<InventoryInterfaceContext>.handleSetAnchorClick(data: GridSlotData, context: InventoryInterfaceContext) {
@@ -256,6 +245,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         executeMoveFinalItem(),
         anchorListItem(),
         profileListItem(),
+        scrollerItem(),
         cornerAItem(),
         cornerBItem(),
         targetPreviewItem(),
@@ -306,6 +296,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         .usedWhen { context.mode == InterfaceMode.EDITING }
         .displayAs(createItem(Material.WRITABLE_BOOK, mm("<green>Save"), listOf(mm("<gray>Save changes and exit edit mode."))))
         .onClick {
+            stageFromChest(click.player, context)
             savePendingChanges(click.player, context)
             context.mode = InterfaceMode.NORMAL
             openInventory(click.player, context)
@@ -424,6 +415,22 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         .displayAs(createItem(Material.PLAYER_HEAD, mm("<white>Profiles"), listOf(mm("<gray>Manage profiles."))))
         .onClick { ProfileInterface.openRefreshed(click.player, ProfileInterfaceContext()) }
 
+    private fun scrollerItem() = item()
+        .atSlot(6, 8)
+        .displayAs(createItem(Material.COMPASS, mm("<white>Scroll"), listOf(
+            mm("<gray>Left-click: scroll down"),
+            mm("<gray>Right-click: scroll up"),
+        )))
+        .onClick {
+            if (context.mode == InterfaceMode.EDITING) {
+                stageFromChest(click.player, context)
+            }
+            val step = if (click.event.click.isShiftClick) 5 else 1
+            val delta = if (click.event.click.isRightClick) -step else step
+            context.position = (context.position + delta).coerceAtLeast(0)
+            openInventory(click.player, context)
+        }
+
     private fun cornerAItem() = item()
         .atSlots(contentArea.allValidSlots())
         .priority(10)
@@ -470,6 +477,29 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         ctx.targetPreviewPositions = emptySet()
         ctx.groupDeleteConfirmed = false
         ctx.groupMoveConfirmed = false
+    }
+
+    private fun contentSlotToGrid(ctx: InventoryInterfaceContext, slot: Int): Pair<Int, Int> =
+        ctx.centerX + (slot % 9 - 4) to ctx.centerY + (slot / 9 - 2) + ctx.position
+
+    /**
+     * Reads the visible content slots of the open chest (which the player edits
+     * natively in edit mode) into [InventoryInterfaceContext.pendingChanges] so
+     * the staged edits survive a re-render (scroll, save, mode switch).
+     */
+    private fun stageFromChest(player: Player, ctx: InventoryInterfaceContext) {
+        val inventory = player.openInventory.topInventory
+        for (slot in 0 until BOTTOM_BAR_START) {
+            val (gx, gy) = contentSlotToGrid(ctx, slot)
+            val key = pendingKey(gx, gy)
+            if (SlotCache.getSlot(ctx.profileId, gx, gy)?.anchorId != null) continue
+            val item = inventory.getItem(slot)
+            if (item == null || item.type.isAir) {
+                ctx.pendingChanges[key] = ""
+            } else {
+                ctx.pendingChanges[key] = encodePendingItem(item)
+            }
+        }
     }
 
     private fun savePendingChanges(player: Player, context: InventoryInterfaceContext) {
