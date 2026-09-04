@@ -134,6 +134,19 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
         assertEquals(Material.STONE, UiHarness.dumpItem(1, 2, 0), "STONE should move to (2,0)")
         assertEquals(Material.DIRT, UiHarness.dumpItem(1, 2, 1), "DIRT should move to (2,1)")
     }
+
+    @Test
+    fun `normal mode copies an item to the cursor without removing it`() {
+        InventoryManagerSeed.seed(1, 0, 0, Material.STONE)
+
+        open()
+        step("open")
+
+        step("click center (22) in normal mode") { click(22) }
+
+        assertEquals(Material.STONE, cursor()?.type, "normal-mode click should copy the item to the cursor")
+        assertEquals(Material.STONE, UiHarness.dumpItem(1, 0, 0), "source item should remain stored")
+    }
 }
 
 object InventoryManagerSeed {
