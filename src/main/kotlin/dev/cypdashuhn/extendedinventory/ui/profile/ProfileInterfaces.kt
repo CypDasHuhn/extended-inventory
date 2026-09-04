@@ -29,7 +29,13 @@ import org.jetbrains.exposed.sql.transactions.transaction
 class ProfileInterfaceContext(
     var cachedProfiles: List<ProfileEntryData> = emptyList(),
     var currentPrimaryId: Int? = null,
-) : ScrollContext()
+) : ScrollContext() {
+    fun copy(): ProfileInterfaceContext {
+        val c = ProfileInterfaceContext(cachedProfiles, currentPrimaryId)
+        c.position = this.position
+        return c
+    }
+}
 
 data class ProfileEntryData(
     val id: Int,
@@ -87,12 +93,10 @@ object ProfileInterface : ScrollInterface<ProfileInterfaceContext, ProfileEntryD
             .onClick {
                 ChatInputManager.awaitInput(click.player, "<gray>Type the profile <white>name<gray>:") { name ->
                     if (name.isBlank()) {
-                        refreshProfiles(click.player, context)
                         ProfileInterface.openRefreshed(click.player, context)
                         return@awaitInput
                     }
                     ProfileActions.createProfile(click.player, name.trim())
-                    refreshProfiles(click.player, context)
                     ProfileInterface.openRefreshed(click.player, context)
                 }
             },
@@ -100,7 +104,7 @@ object ProfileInterface : ScrollInterface<ProfileInterfaceContext, ProfileEntryD
 
     fun openRefreshed(player: Player, context: ProfileInterfaceContext): org.bukkit.inventory.Inventory {
         refreshProfiles(player, context)
-        return openInventory(player, context)
+        return openInventory(player, context.copy())
     }
 }
 
@@ -204,7 +208,13 @@ object ProfileDetailInterface : ScrollInterface<ProfileDetailContext, ProfileEnt
 
 class PlayerInviteContext(
     val profileId: Int,
-) : ScrollContext()
+) : ScrollContext() {
+    fun copy(): PlayerInviteContext {
+        val c = PlayerInviteContext(profileId)
+        c.position = this.position
+        return c
+    }
+}
 
 data class PlayerInviteData(
     val playerId: Int,
@@ -254,7 +264,7 @@ object PlayerInviteInterface : ScrollInterface<PlayerInviteContext, PlayerInvite
         if (onlinePlayer != null) {
             PlayerProfileManager.assign(onlinePlayer, context.profileId, next)
         }
-        PlayerInviteInterface.openInventory(click.player, context)
+        PlayerInviteInterface.openInventory(click.player, context.copy())
     }
 
     override fun getInterfaceItems(): List<InterfaceItem<PlayerInviteContext>> = listOf(

@@ -23,7 +23,13 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 class AnchorListContext(
     var profileId: Int,
-) : ScrollContext()
+) : ScrollContext() {
+    fun copy(): AnchorListContext {
+        val c = AnchorListContext(profileId)
+        c.position = this.position
+        return c
+    }
+}
 
 data class AnchorEntryData(
     val id: Int,
@@ -73,11 +79,11 @@ object AnchorListInterface : ScrollInterface<AnchorListContext, AnchorEntryData>
                 val state = HotbarManager.getState(player)
                 ChatInputManager.awaitInput(player, "<gray>Type the anchor <white>name<gray>:") { name ->
                     if (name.isBlank()) {
-                        AnchorListInterface.openInventory(player, context)
+                        AnchorListInterface.openInventory(player, context.copy())
                         return@awaitInput
                     }
                     AnchorActions.addAnchor(context.profileId, name.trim(), state.x, state.y)
-                    AnchorListInterface.openInventory(player, context)
+                    AnchorListInterface.openInventory(player, context.copy())
                 }
             },
     )
