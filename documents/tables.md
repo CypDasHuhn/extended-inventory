@@ -2,61 +2,47 @@
 
 ## Imported Tables
 
-- Player from PlayerManager
+None persisted locally. Player identity is resolved via the rooster player
+manager (`ExtendedInventoryPlugin.playerManager`); player ids are stored as
+plain integers, not foreign keys.
 
-## Profile
+## Profile (`ei_profiles`)
 
-- id: Int PK
-- name: String
-- createdByPlayerId: Int FK
-- opennessId: Int
+- id: Int PK (auto)
+- name: String (varchar 64)
+- createdByPlayerId: Int
+- openness: enum (PUBLIC_READ | PUBLIC_WRITE | PRIVATE), default PRIVATE
 
-## Profile Openness
+## Player Profiles (`ei_player_profiles`)
 
-- id: Int PK
-
-(VALUES: PUBLIC-READ, PUBLIC-WRITE, PRIVATE)
-
-## Player Profiles
-
-- playerId: Int FK
+- playerId: Int
 - profileId: Int
-- statusId: Int FK
+- status: enum (PRIMARY | WRITE_READ | READ_ONLY), default READ_ONLY
 
-## Player Profile Status
+## Inventory (`ei_inventory`)
 
-- id: Int PK
-
-(VALUES: PRIMARY, WRITE-READ, READ-ONLY)
-
-## Inventory
-
-- PK (profileId, x, y)
-- profileId
-- x
-- y
-- itemId: Int? FK
-- anchorId Int? FK
-
-## Item
-
-- id: Int PK
-- materialId: Int FK
-- nbt: String?
-
-## Materials
-
-- id: Int PK
-- name: String
-
-## Anchor
-
-- id: Int PK
+- id: Int PK (auto)
 - profileId: Int
 - x: Int
 - y: Int
-- name: String
+- itemId: Int? (FK -> ei_items)
+- anchorId: Int? (FK -> ei_anchors)
+
+## Item (`ei_items`)
+
+- id: Int PK (auto)
+- serializedItem: text (base64-encoded Bukkit item bytes)
+- materialName: varchar 128
+
+## Anchor (`ei_anchors`)
+
+- id: Int PK (auto)
+- profileId: Int
+- x: Int
+- y: Int
+- name: varchar 64
 
 ## Buffers
 
-Buffers are not persisted, they live in memory only.
+Buffers are not persisted; they live in memory only as a per-player stack in
+`BufferManager` with a configurable TTL.

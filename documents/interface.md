@@ -1,86 +1,92 @@
 # Interface
 
-## Main Interface
+## Main Interface (`InventoryInterface`)
 
-### Context
+6 rows; content area is rows 1‑5, grounded on the context center `(centerX, centerY)`.
+Bottom row holds navigation/action buttons plus the inherited scroller.
 
-- ProfileId
-- x
-- y
-- Mode
+### Modes (`InterfaceMode`)
 
-### Mode
-
-- Normal
-- Editing
-- SettingAnchor
-- MaterializingAnchor
-
-5 rows of content. interface position is grounded in row 3 col 5 (center).
-bottom row has 'back', scrollers, and toggle edit mode button. by default edit mode is off.
-anchor interface button, to move to anchor interface.
-profile interface button, to move to profile interface.
+- `NORMAL`
+- `EDITING`
+- `SETTING_ANCHOR`
+- `MATERIALIZING_ANCHOR`
+- `GROUP_DELETE_A` / `GROUP_DELETE_B`
+- `GROUP_MOVE_A` / `GROUP_MOVE_B` / `GROUP_MOVE_TARGET`
 
 ### Normal mode
 
-normal mode, click events on items result in the user getting a copy of the material in the cursor.
-the same goes for hotkeys 1-9.
+Clicking a regular item copies it to the cursor without modifying the
+inventory. Clicking an anchor item jumps to that anchor's coordinate.
 
 ### Edit mode
 
-when edit mode is on, items are freely movable.
-when eidt mode is on, a 'save' button appears.
-when the scroller is used while edit mode is on, the content of the interface is buffered into the context, and resolved on save.
+Items are freely movable: click a filled slot with an empty cursor to pick it
+up, or click an empty slot with a filled cursor to place it. Changes are
+buffered in the context and resolved on save. A **Save** (slot 48) and
+**Discard** (slot 49) button replace the normal actions while editing.
+Pending edits are stored as serialized strings so the context survives JSON
+persistence.
 
-### Create Anchor mode
+### Set Anchor mode
 
-The first slot in the content area to be clicked is deemed the anchor position. interface closed, user types in a name for the anchor in the chat, anchor interface opened with new anchor added.
+The first content slot clicked becomes the anchor position. The interface stays
+open while the player types a name in chat; the anchor is created on that slot.
 
 ### Materialize Anchor mode
 
-The first slot in the content area to be clicked is deemed the position of the materialized anchor. it is saved as an materialized-anchor. the item has a specific nbt flag, which makes it resolvable when saving items,
-making it possible to copy the item afterwards. when the materialized anchor is clicked in normal mode, it jumps you to the new position.
+The first content slot clicked produces a materialized anchor item (an
+ender pearl with NBT referencing the coordinate). Using the item later jumps to
+that coordinate.
 
-## Anchor interface
+### Group Delete
 
-Shows you a list of anchors. on click you go to anchor detail interface.
+Pick two corners (A then B) via content clicks, then confirm. On confirmation
+every item in the region is deleted.
 
-back button, scrollers, new anchor button. On click you move to the main interface with previous context but setting anchor mode.
+### Group Move
 
-### Anchor Detail Interface
+Pick two corners for the source region, then a third slot as the target
+corner. On confirmation the region is translated to the target. A green
+preview overlays the target region.
 
-- back button
-- jump-to button
-- rename button: needs confirmation and write access, user types in a new name for the anchor in the chat, interface is opened again.
-- delete button: needs confirmation and write access
-- add-materialized-anchor button: needs write access, moves to extended inventory interface. next click
+## Anchor Interface
+
+### Anchor List
+
+Lists all anchors for the current profile. Clicking an entry opens the anchor
+detail interface. A "New Anchor" button creates one at the current position via
+chat input.
+
+### Anchor Detail
+
+- Back
+- Info
+- Jump To
+- Rename (chat input)
+- Delete
+- Materialize (gives a materialized anchor item)
 
 ## Profile Interface
 
-Shows you a list of profiles you have subscribed to. on click you turn to profile detail interface.
-the currently selected profile is enchanted.
+### Profile List
 
-back button, scrollers, new profile button. on click interface closes, user types in a name for the new profile in the chat, profile interface is opened with new profile added.
-Button to turn datasource from subscribed profiles, to accessible-unsubscribed ones. on click you subscribe to that profile.
+Lists profiles accessible to the player. The primary profile is highlighted
+(enchanted book). Clicking an entry opens the profile detail interface. A
+"New Profile" button creates one via chat input.
 
-### Profile Detail Interface
+### Profile Detail
 
-back button.
-if you are the creator of the profile:
+- Back
+- Info
+- Switch To (makes it the active profile)
+- Set Default
+- Rename (chat input)
+- Openness (cycles PRIVATE -> PUBLIC_READ -> PUBLIC_WRITE)
+- Invitations (opens player invite interface)
+- Delete
 
-- delete button: needs confirmation
-- rename button: needs confirmation, user types in a new name for the profile in the chat, interface is opened again.
-- openness button: State cycler between public-write, public-read, private
+### Player Invite Interface
 
-if you have write access to the profile:
-
-- invitations button: Moves to player invite interface
-- turn to primary button, changes your profile to primary
-
-if you have read access to the profile:
-
-- switch-to button, changes your profile to that one
-
-#### Player invite Interface
-
-list of players, back button. each player can be cycled between uninvited, read-only and full access. You cannot change access of the owner of the profile.
+Lists players with access to the profile. Clicking a player cycles their
+access: READ_ONLY -> WRITE_READ -> READ_ONLY.
