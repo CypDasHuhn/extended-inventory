@@ -37,7 +37,7 @@ class InventoryInterfaceContext(
     var centerX: Int = 0,
     var centerY: Int = 0,
     var mode: InterfaceMode = InterfaceMode.NORMAL,
-    var pendingChanges: MutableMap<Pair<Int, Int>, ItemStack?> = mutableMapOf(),
+    var pendingChanges: MutableMap<String, String> = mutableMapOf(),
     var cornerA: Pair<Int, Int>? = null,
     var cornerB: Pair<Int, Int>? = null,
     var targetCorner: Pair<Int, Int>? = null,
@@ -57,6 +57,7 @@ data class GridSlotData(
 object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotData>(
     handler { InventoryInterfaceContext(0) },
     ScrollInterfaceOptions<InventoryInterfaceContext>().apply {
+        ignoreEmptySlots = false
         inventoryTitle = { _, ctx ->
             val suffix = when (ctx.mode) {
                 InterfaceMode.GROUP_DELETE_A -> " <dark_red>[Delete: pick corner A]"
@@ -80,6 +81,19 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         return ctx.centerX + (col - 4) to ctx.centerY + (row - 2)
     }
 
+    private fun pendingKey(x: Int, y: Int) = "$x:$y"
+
+    private fun parsePendingKey(key: String): Pair<Int, Int> {
+        val i = key.indexOf(':')
+        return key.substring(0, i).toInt() to key.substring(i + 1).toInt()
+    }
+
+    private fun encodePendingItem(item: ItemStack): String =
+        ItemManager.encode(item.serializeAsBytes())
+
+    private fun decodePendingItem(encoded: String): ItemStack? =
+        if (encoded.isEmpty()) null else ItemStack.deserializeBytes(ItemManager.decode(encoded))
+
     private fun isGroupPickMode(mode: InterfaceMode): Boolean = mode in setOf(
         InterfaceMode.GROUP_DELETE_A, InterfaceMode.GROUP_DELETE_B,
         InterfaceMode.GROUP_MOVE_A, InterfaceMode.GROUP_MOVE_B,
@@ -96,11 +110,11 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
 
     override fun contentProvider(id: Int, context: InventoryInterfaceContext): GridSlotData? {
         val (gridX, gridY) = slotToGrid(context, id)
-        val pos = gridX to gridY
+        val key = pendingKey(gridX, gridY)
 
-        if (context.pendingChanges.containsKey(pos)) {
-            val pending = context.pendingChanges[pos]
-            return GridSlotData(gridX, gridY, pending?.takeUnless { it.type.isAir })
+        if (context.pendingChanges.containsKey(key)) {
+            val pending = decodePendingItem(context.pendingChanges[key]!!)
+            return GridSlotData(gridX, gridY, pending)
         }
 
         val slot = SlotCache.getSlot(context.profileId, gridX, gridY)
@@ -155,15 +169,15 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
     }
 
     private fun ClickInfo<InventoryInterfaceContext>.handleEditClick(data: GridSlotData, context: InventoryInterfaceContext) {
-        val pos = data.x to data.y
+        val key = pendingKey(data.x, data.y)
         val cursorItem = click.player.itemOnCursor.takeUnless { it.type.isAir }
         val currentItem = data.item
 
         if (cursorItem != null) {
-            context.pendingChanges[pos] = cursorItem.clone()
+            context.pendingChanges[key] = encodePendingItem(cursorItem)
             click.player.setItemOnCursor(currentItem?.clone() ?: ItemStack.empty())
         } else if (currentItem != null) {
-            context.pendingChanges[pos] = null
+            context.pendingChanges[key] = ""
             click.player.setItemOnCursor(currentItem.clone())
         }
 
@@ -459,8 +473,9 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
     }
 
     private fun savePendingChanges(player: Player, context: InventoryInterfaceContext) {
-        context.pendingChanges.forEach { (pos, item) ->
-            InventoryActions.setItem(context.profileId, pos.first, pos.second, item)
+        context.pendingChanges.forEach { (key, encoded) ->
+            val (x, y) = parsePendingKey(key)
+            InventoryActions.setItem(context.profileId, x, y, decodePendingItem(encoded))
         }
         context.pendingChanges.clear()
         SlotCache.invalidateProfile(context.profileId)
