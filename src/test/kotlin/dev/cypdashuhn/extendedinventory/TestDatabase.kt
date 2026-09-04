@@ -6,6 +6,7 @@ import dev.cypdashuhn.extendedinventory.db.ItemManager
 import dev.cypdashuhn.extendedinventory.db.PlayerProfileManager
 import dev.cypdashuhn.extendedinventory.db.ProfileManager
 import dev.cypdashuhn.extendedinventory.db.SlotCache
+import dev.rooster.ui.sql.SqlInterfaceContextProvider
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -32,6 +33,7 @@ object TestDatabase {
                 ItemManager.Items,
                 AnchorManager.Anchors,
                 PlayerProfileManager.PlayerProfiles,
+                SqlInterfaceContextProvider.InterfaceContexts,
             )
         }
     }
