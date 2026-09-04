@@ -67,10 +67,9 @@ class InventoryInterfaceGuiTest {
         click(49)
         tick()
 
-        // Put STONE on the cursor and click the center slot (grid 0,0 == slot 22).
-        player.setItemOnCursor(ItemStack(Material.STONE))
-        click(22)
-        tick()
+        // Vanilla handles content clicks, so put STONE directly into the center
+        // slot (grid 0,0 == slot 22) as the result of a click.
+        player.openInventory.topInventory.setItem(22, ItemStack(Material.STONE))
 
         // Save (Save button at slot 48).
         click(48)
@@ -95,9 +94,9 @@ class InventoryInterfaceGuiTest {
         click(49)
         tick()
 
-        // Pick up the item at the center slot (empty cursor + filled slot).
-        click(22)
-        tick()
+        // Vanilla handles content clicks, so clear the center slot as the result
+        // of a pick-up click.
+        player.openInventory.topInventory.setItem(22, null)
 
         // Save.
         click(48)

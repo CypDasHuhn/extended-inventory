@@ -74,7 +74,10 @@ abstract class UiHarness {
         return PlayerSimulation(player).simulateInventoryClick(player.openInventory, clickType, topSize + slot)
     }
 
-    fun setCursor(item: ItemStack) = player.setItemOnCursor(item)
+    fun setCursor(item: ItemStack?) = player.setItemOnCursor(item ?: ItemStack.empty())
+
+    /** Directly writes a slot in the top chest, simulating what vanilla does on an uncancelled click. */
+    fun setChest(slot: Int, item: ItemStack?) = player.openInventory.topInventory.setItem(slot, item)
 
     fun cursor(): ItemStack? = player.itemOnCursor
 

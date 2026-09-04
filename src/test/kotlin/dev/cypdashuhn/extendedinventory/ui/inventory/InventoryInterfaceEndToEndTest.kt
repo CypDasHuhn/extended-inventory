@@ -3,6 +3,7 @@ package dev.cypdashuhn.extendedinventory.ui.inventory
 import dev.rooster.ui.context.InMemoryInterfaceContextProvider
 import dev.rooster.ui.sql.SqlInterfaceContextProvider
 import org.bukkit.Material
+import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.ItemStack
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -35,12 +36,12 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
         assertEquals(Material.BARRIER, slotMaterial(49), "slot 49 should become the Discard button")
 
         // ── Step 3: place STONE at the center slot (0,0) ────────────────
-        setCursor(ItemStack(Material.STONE))
-        step("place stone at center (22)") { click(22) }
+        // Vanilla handles content clicks in edit mode, so write the chest slot
+        // directly to model the result of a click that puts STONE into (0,0).
+        setChest(22, ItemStack(Material.STONE))
+        step("vanilla: place stone at center (22)")
 
-        val c = cursor()
-        assertTrue(c == null || c.type.isAir, "cursor should be empty after placing")
-        assertTrue(context().pendingChanges.containsKey("0:0"), "pendingChanges should hold the placed item at 0:0")
+        assertEquals(Material.STONE, slotMaterial(22), "chest slot 22 should hold the placed item")
 
         // ── Step 4: save ─────────────────────────────────────────────────
         step("save (48)") { click(48) }
@@ -163,6 +164,41 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
     }
 
     @Test
+    fun `edit mode content clicks are not cancelled`() {
+        open()
+        step("open")
+        step("enter edit mode (49)") { click(49) }
+
+        val event = stepEvent("click content slot (22) in edit mode") { click(22) }
+
+        assertFalse(event.isCancelled, "content clicks in edit mode must pass through to vanilla")
+        assertEquals(InterfaceMode.EDITING, context().mode)
+        assertTrue(context().pendingChanges.isEmpty(), "no pending change should be recorded before save")
+    }
+
+    @Test
+    fun `edit mode scroll stages unsaved edits`() {
+        open()
+        step("open")
+        step("enter edit mode (49)") { click(49) }
+
+        // Vanilla place STONE at (0,0) == slot 22.
+        setChest(22, ItemStack(Material.STONE))
+        step("vanilla: place stone at center (22)")
+
+        // Scroll down then back up; the unsaved edit must survive both re-renders.
+        step("scroll down (53)") { click(53) }
+        assertEquals(1, context().position)
+
+        step("scroll up (53 right-click)") { click(53, ClickType.RIGHT) }
+        assertEquals(0, context().position)
+
+        step("save (48)") { click(48) }
+
+        assertEquals(Material.STONE, UiHarness.dumpItem(1, 0, 0), "edit should survive scrolling and be saved")
+    }
+
+    @Test
     fun `grab item from own inventory and place it into the interface`() {
         player.inventory.setItem(0, ItemStack(Material.STONE))
 
@@ -176,8 +212,10 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
         setCursor(ItemStack(Material.STONE))
         player.inventory.setItem(0, null)
 
-        step("place stone into interface (22)") { click(22) }
-        assertTrue(context().pendingChanges.containsKey("0:0"), "placed item should be staged at 0:0")
+        // Vanilla place the cursor item into the interface's center slot.
+        setChest(22, ItemStack(Material.STONE))
+        setCursor(null)
+        step("vanilla: place stone into interface (22)")
 
         step("save (48)") { click(48) }
 
