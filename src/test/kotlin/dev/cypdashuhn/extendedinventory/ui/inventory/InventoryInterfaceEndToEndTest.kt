@@ -76,6 +76,64 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
         assertEquals(Material.STONE, slotMaterial(13), "after scroll, STONE should move up one row to slot 13")
         assertEquals(Material.DIRT, slotMaterial(22), "after scroll, DIRT should move up one row to slot 22")
     }
+
+    @Test
+    fun `group delete removes a region`() {
+        InventoryManagerSeed.seed(1, 0, 0, Material.STONE)
+        InventoryManagerSeed.seed(1, 1, 0, Material.STONE)
+
+        open()
+        step("open")
+
+        step("click group delete (47)") { click(47) }
+        assertEquals(InterfaceMode.GROUP_DELETE_A, context().mode)
+
+        step("pick corner A at (0,0) -> slot 22") { click(22) }
+        assertEquals(InterfaceMode.GROUP_DELETE_B, context().mode)
+
+        step("pick corner B at (1,0) -> slot 23") { click(23) }
+        assertEquals(InterfaceMode.NORMAL, context().mode)
+        assertTrue(context().cornerA == (0 to 0) && context().cornerB == (1 to 0))
+
+        step("confirm delete (51)") { click(51) }
+        assertTrue(context().groupDeleteConfirmed)
+
+        step("final delete (51)") { click(51) }
+
+        assertNull(UiHarness.dumpItem(1, 0, 0), "item at (0,0) should be deleted")
+        assertNull(UiHarness.dumpItem(1, 1, 0), "item at (1,0) should be deleted")
+    }
+
+    @Test
+    fun `group move translates a region`() {
+        InventoryManagerSeed.seed(1, 0, 0, Material.STONE)
+        InventoryManagerSeed.seed(1, 0, 1, Material.DIRT)
+
+        open()
+        step("open")
+
+        step("click group move (48)") { click(48) }
+        assertEquals(InterfaceMode.GROUP_MOVE_A, context().mode)
+
+        step("pick corner A at (0,0) -> slot 22") { click(22) }
+        assertEquals(InterfaceMode.GROUP_MOVE_B, context().mode)
+
+        step("pick corner B at (0,1) -> slot 31") { click(31) }
+        assertEquals(InterfaceMode.GROUP_MOVE_TARGET, context().mode)
+
+        step("pick target at (2,0) -> slot 24") { click(24) }
+        assertEquals(InterfaceMode.NORMAL, context().mode)
+
+        step("confirm move (51)") { click(51) }
+        assertTrue(context().groupMoveConfirmed)
+
+        step("final move (51)") { click(51) }
+
+        assertNull(UiHarness.dumpItem(1, 0, 0), "source (0,0) should be empty after move")
+        assertNull(UiHarness.dumpItem(1, 0, 1), "source (0,1) should be empty after move")
+        assertEquals(Material.STONE, UiHarness.dumpItem(1, 2, 0), "STONE should move to (2,0)")
+        assertEquals(Material.DIRT, UiHarness.dumpItem(1, 2, 1), "DIRT should move to (2,1)")
+    }
 }
 
 object InventoryManagerSeed {
