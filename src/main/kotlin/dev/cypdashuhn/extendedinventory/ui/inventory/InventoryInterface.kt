@@ -44,7 +44,37 @@ class InventoryInterfaceContext(
     var targetPreviewPositions: Set<Pair<Int, Int>> = emptySet(),
     var groupDeleteConfirmed: Boolean = false,
     var groupMoveConfirmed: Boolean = false,
-) : ScrollContext()
+) : ScrollContext() {
+
+    /**
+     * Returns a fresh instance carrying the same state. The UI framework keys
+     * its caches on context object identity, so state changes must always be
+     * applied to a new instance (never mutated in place) to trigger a re-render.
+     */
+    fun copy(
+        mode: InterfaceMode = this.mode,
+        centerX: Int = this.centerX,
+        centerY: Int = this.centerY,
+        pendingChanges: MutableMap<String, String> = this.pendingChanges,
+        cornerA: Pair<Int, Int>? = this.cornerA,
+        cornerB: Pair<Int, Int>? = this.cornerB,
+        targetCorner: Pair<Int, Int>? = this.targetCorner,
+        targetPreviewPositions: Set<Pair<Int, Int>> = this.targetPreviewPositions,
+        groupDeleteConfirmed: Boolean = this.groupDeleteConfirmed,
+        groupMoveConfirmed: Boolean = this.groupMoveConfirmed,
+    ): InventoryInterfaceContext {
+        val c = InventoryInterfaceContext(profileId, centerX, centerY, mode)
+        c.pendingChanges = pendingChanges
+        c.cornerA = cornerA
+        c.cornerB = cornerB
+        c.targetCorner = targetCorner
+        c.targetPreviewPositions = targetPreviewPositions
+        c.groupDeleteConfirmed = groupDeleteConfirmed
+        c.groupMoveConfirmed = groupMoveConfirmed
+        c.position = this.position
+        return c
+    }
+}
 
 data class GridSlotData(
     val x: Int,
@@ -159,7 +189,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
                 context.centerX = anchor.x
                 context.centerY = anchor.y
                 context.position = 0
-                InventoryInterface.openInventory(click.player, context)
+                InventoryInterface.openInventory(click.player, context.copy())
                 return
             }
         }
@@ -181,18 +211,18 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
             click.player.setItemOnCursor(currentItem.clone())
         }
 
-        openInventory(click.player, context)
+        openInventory(click.player, context.copy())
     }
 
     private fun ClickInfo<InventoryInterfaceContext>.handleSetAnchorClick(data: GridSlotData, context: InventoryInterfaceContext) {
-        InventoryInterface.openInventory(click.player, context)
+        InventoryInterface.openInventory(click.player, context.copy())
         ChatInputManager.awaitInput(click.player, "<gray>Type the anchor <white>name<gray>:") { name ->
             if (name.isBlank()) return@awaitInput
             val trimmed = name.trim()
             val anchorId = AnchorManager.create(context.profileId, trimmed, data.x, data.y)
             SlotCache.setAnchor(context.profileId, data.x, data.y, anchorId)
             context.mode = InterfaceMode.NORMAL
-            InventoryInterface.openInventory(click.player, context)
+            InventoryInterface.openInventory(click.player, context.copy())
         }
     }
 
@@ -200,7 +230,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         val anchorItem = HotbarManager.createAnchorItem("anchor_${data.x}_${data.y}", data.x, data.y)
         click.player.inventory.addItem(anchorItem)
         context.mode = InterfaceMode.NORMAL
-        InventoryInterface.openInventory(click.player, context)
+        InventoryInterface.openInventory(click.player, context.copy())
     }
 
     private fun ClickInfo<InventoryInterfaceContext>.handleDeleteCornerPick(data: GridSlotData, context: InventoryInterfaceContext) {
@@ -211,7 +241,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
             context.cornerB = data.x to data.y
             context.mode = InterfaceMode.NORMAL
         }
-        InventoryInterface.openInventory(click.player, context)
+        InventoryInterface.openInventory(click.player, context.copy())
     }
 
     private fun ClickInfo<InventoryInterfaceContext>.handleMoveCornerPick(data: GridSlotData, context: InventoryInterfaceContext) {
@@ -222,14 +252,14 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
             context.cornerB = data.x to data.y
             context.mode = InterfaceMode.GROUP_MOVE_TARGET
         }
-        InventoryInterface.openInventory(click.player, context)
+        InventoryInterface.openInventory(click.player, context.copy())
     }
 
     private fun ClickInfo<InventoryInterfaceContext>.handleMoveTargetPick(data: GridSlotData, context: InventoryInterfaceContext) {
         context.targetCorner = data.x to data.y
         context.targetPreviewPositions = computeTargetPreview(context)
         context.mode = InterfaceMode.NORMAL
-        InventoryInterface.openInventory(click.player, context)
+        InventoryInterface.openInventory(click.player, context.copy())
     }
 
     private fun computeTargetPreview(ctx: InventoryInterfaceContext): Set<Pair<Int, Int>> {
@@ -276,7 +306,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         .onClick {
             clearGroup(context)
             context.mode = InterfaceMode.GROUP_DELETE_A
-            InventoryInterface.openInventory(click.player, context)
+            InventoryInterface.openInventory(click.player, context.copy())
         }
 
     private fun groupMoveItem() = item()
@@ -289,7 +319,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         .onClick {
             clearGroup(context)
             context.mode = InterfaceMode.GROUP_MOVE_A
-            InventoryInterface.openInventory(click.player, context)
+            InventoryInterface.openInventory(click.player, context.copy())
         }
 
     private fun editModeItem() = item()
@@ -298,7 +328,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         .displayAs(createItem(Material.BOOK, mm("<white>Edit Mode"), listOf(mm("<gray>Click to edit inventory slots."))))
         .onClick {
             context.mode = InterfaceMode.EDITING
-            InventoryInterface.openInventory(click.player, context)
+            InventoryInterface.openInventory(click.player, context.copy())
         }
 
     private fun saveEditsItem() = item()
@@ -308,7 +338,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         .onClick {
             savePendingChanges(click.player, context)
             context.mode = InterfaceMode.NORMAL
-            openInventory(click.player, context)
+            openInventory(click.player, context.copy())
         }
 
     private fun discardEditsItem() = item()
@@ -318,7 +348,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         .onClick {
             context.pendingChanges.clear()
             context.mode = InterfaceMode.NORMAL
-            InventoryInterface.openInventory(click.player, context)
+            InventoryInterface.openInventory(click.player, context.copy())
         }
 
     private fun cancelGroupItem() = item()
@@ -328,7 +358,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         .onClick {
             clearGroup(context)
             context.mode = InterfaceMode.NORMAL
-            InventoryInterface.openInventory(click.player, context)
+            InventoryInterface.openInventory(click.player, context.copy())
         }
 
     private fun setAnchorItem() = item()
@@ -337,7 +367,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         .displayAs(createItem(Material.ENDER_PEARL, mm("<white>Set Anchor"), listOf(mm("<gray>Click a slot to create an anchor."))))
         .onClick {
             context.mode = InterfaceMode.SETTING_ANCHOR
-            InventoryInterface.openInventory(click.player, context)
+            InventoryInterface.openInventory(click.player, context.copy())
         }
 
     private fun materializeAnchorItem() = item()
@@ -346,7 +376,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         .displayAs(createItem(Material.ITEM_FRAME, mm("<white>Materialize Anchor"), listOf(mm("<gray>Get a materialized anchor item."))))
         .onClick {
             context.mode = InterfaceMode.MATERIALIZING_ANCHOR
-            InventoryInterface.openInventory(click.player, context)
+            InventoryInterface.openInventory(click.player, context.copy())
         }
 
     private fun executeDeleteConfirmItem() = item()
@@ -359,7 +389,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         )))
         .onClick {
             context.groupDeleteConfirmed = true
-            InventoryInterface.openInventory(click.player, context)
+            InventoryInterface.openInventory(click.player, context.copy())
         }
 
     private fun executeDeleteFinalItem() = item()
@@ -378,7 +408,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
             clearGroup(context)
             context.mode = InterfaceMode.NORMAL
             HotbarManager.mirrorToHotbar(click.player)
-            InventoryInterface.openInventory(click.player, context)
+            InventoryInterface.openInventory(click.player, context.copy())
         }
 
     private fun executeMoveConfirmItem() = item()
@@ -391,7 +421,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         )))
         .onClick {
             context.groupMoveConfirmed = true
-            InventoryInterface.openInventory(click.player, context)
+            InventoryInterface.openInventory(click.player, context.copy())
         }
 
     private fun executeMoveFinalItem() = item()
@@ -411,7 +441,7 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
             clearGroup(context)
             context.mode = InterfaceMode.NORMAL
             HotbarManager.mirrorToHotbar(click.player)
-            InventoryInterface.openInventory(click.player, context)
+            InventoryInterface.openInventory(click.player, context.copy())
         }
 
     private fun anchorListItem() = item()
