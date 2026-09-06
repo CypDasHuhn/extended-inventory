@@ -11,4 +11,5 @@ data class Region(
     }
 }
 
-fun region(x1: Int, y1: Int, x2: Int, y2: Int): Region = Region(minOf(x1, x2), minOf(y1, y2), maxOf(x1, x2), maxOf(y1, y2))
+fun region(x1: Int, y1: Int, x2: Int, y2: Int): Region =
+    Region(minOf(x1, x2), minOf(y1, y2), maxOf(x1, x2), maxOf(y1, y2))

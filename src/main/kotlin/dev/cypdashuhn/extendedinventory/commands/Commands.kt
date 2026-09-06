@@ -10,7 +10,8 @@ fun CommandsScope.registerCommands() {
         onExecute {
             val state = HotbarManager.getState(player)
             val profileId = HotbarManager.ensureProfile(player)
-            InventoryInterface.openInventory(player, InventoryInterfaceContext(profileId, state.x, state.y))
+            InventoryInterface
+                .openInventory(player, InventoryInterfaceContext(profileId, state.x, state.y))
         }
         jumpTo()
         currentPosition()

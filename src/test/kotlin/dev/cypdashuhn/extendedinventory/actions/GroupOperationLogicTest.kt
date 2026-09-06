@@ -35,17 +35,23 @@ class GroupOperationLogicTest {
         val minY = minOf(ay, by)
         val maxY = maxOf(ay, by)
 
-        val positions = (minX..maxX)
-            .flatMap { sx ->
-                (minY..maxY).map { sy ->
-                    (tx + (sx - minX)) to (ty + (sy - minY))
-                }
-            }.toSet()
+        val positions =
+            (minX..maxX)
+                .flatMap { sx ->
+                    (minY..maxY).map { sy ->
+                        (tx + (sx - minX)) to (ty + (sy - minY))
+                    }
+                }.toSet()
 
-        val expected = setOf(
-            10 to 20, 11 to 20, 12 to 20,
-            10 to 21, 11 to 21, 12 to 21,
-        )
+        val expected =
+            setOf(
+                10 to 20,
+                11 to 20,
+                12 to 20,
+                10 to 21,
+                11 to 21,
+                12 to 21,
+            )
 
         assertEquals(expected, positions)
         assertEquals(6, positions.size)
@@ -65,18 +71,26 @@ class GroupOperationLogicTest {
         val minY = minOf(ay, by)
         val maxY = maxOf(ay, by)
 
-        val positions = (minX..maxX)
-            .flatMap { sx ->
-                (minY..maxY).map { sy ->
-                    (tx + (sx - minX)) to (ty + (sy - minY))
-                }
-            }.toSet()
+        val positions =
+            (minX..maxX)
+                .flatMap { sx ->
+                    (minY..maxY).map { sy ->
+                        (tx + (sx - minX)) to (ty + (sy - minY))
+                    }
+                }.toSet()
 
-        val expected = setOf(
-            5 to 5, 6 to 5, 7 to 5,
-            5 to 6, 6 to 6, 7 to 6,
-            5 to 7, 6 to 7, 7 to 7,
-        )
+        val expected =
+            setOf(
+                5 to 5,
+                6 to 5,
+                7 to 5,
+                5 to 6,
+                6 to 6,
+                7 to 6,
+                5 to 7,
+                6 to 7,
+                7 to 7,
+            )
 
         assertEquals(expected, positions)
         assertEquals(9, positions.size)

@@ -30,10 +30,12 @@ class ExtendedInventoryPlugin : JavaPlugin() {
         plugin = this
 
         initRooster(plugin, services) {
-            services.set(YmlLocaleProvider(
-                mapOf("en_US" to Locale.ENGLISH),
-                "en_US"
-            ))
+            services.set(
+                YmlLocaleProvider(
+                    mapOf("en_US" to Locale.ENGLISH),
+                    "en_US"
+                )
+            )
             initDb()
             initUi()
             commands {

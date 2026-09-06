@@ -33,11 +33,12 @@ object ItemManager {
         val material = itemStack.type.name
 
         return transaction {
-            val existing = Items
-                .selectAll()
-                .where {
-                    Items.serializedItem eq serialized
-                }.firstOrNull()
+            val existing =
+                Items
+                    .selectAll()
+                    .where {
+                        Items.serializedItem eq serialized
+                    }.firstOrNull()
             if (existing != null) {
                 existing[Items.id].value
             } else {
@@ -53,7 +54,9 @@ object ItemManager {
 
     fun getItem(itemId: Int): ItemStack? =
         transaction {
-            val row = Items.selectAll().where { Items.id eq itemId }.firstOrNull() ?: return@transaction null
+            val row =
+                Items.selectAll().where { Items.id eq itemId }.firstOrNull()
+                    ?: return@transaction null
             ItemStack.deserializeBytes(decode(row[Items.serializedItem]))
         }
 
@@ -86,10 +89,11 @@ object ItemManager {
 
     fun deleteIfUnused(itemId: Int) {
         transaction {
-            val used = InventoryManager.InventorySlots
-                .selectAll()
-                .where { InventoryManager.InventorySlots.itemId eq itemId }
-                .count() > 0
+            val used =
+                InventoryManager.InventorySlots
+                    .selectAll()
+                    .where { InventoryManager.InventorySlots.itemId eq itemId }
+                    .count() > 0
             if (!used) {
                 Items.deleteWhere { Items.id eq itemId }
             }

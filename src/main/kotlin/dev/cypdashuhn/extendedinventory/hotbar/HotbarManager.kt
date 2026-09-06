@@ -52,20 +52,24 @@ object HotbarManager {
         if (state.profileId != null) return state.profileId!!
 
         val primaryId = PlayerProfileManager.getPrimary(player)
-        val profileId = if (primaryId != null) {
-            primaryId
-        } else {
-            val profileId = ProfileManager.create("default", player)
-            PlayerProfileManager.assign(player, profileId, PlayerProfileStatus.PRIMARY)
-            profileId
-        }
+        val profileId =
+            if (primaryId != null) {
+                primaryId
+            } else {
+                val profileId = ProfileManager.create("default", player)
+                PlayerProfileManager.assign(player, profileId, PlayerProfileStatus.PRIMARY)
+                profileId
+            }
         state.profileId = profileId
         saveState(player)
         return profileId
     }
 
     fun saveState(player: Player) {
-        states[player.uniqueId.toString()]?.let { PlayerStateStore.save(player.uniqueId.toString(), it) }
+        states[player.uniqueId.toString()]?.let {
+            PlayerStateStore
+                .save(player.uniqueId.toString(), it)
+        }
     }
 
     fun switchProfile(player: Player, profileId: Int) {
@@ -114,10 +118,12 @@ object HotbarManager {
                 .append(Component.text("$x, $y", NamedTextColor.WHITE))
                 .append(Component.text(")", NamedTextColor.GRAY))
         )
-        meta.lore(listOf(
-            Component.text("Right-click to jump to ($x, $y)", NamedTextColor.GRAY),
-            Component.text("Anchor: $name", NamedTextColor.GRAY),
-        ))
+        meta.lore(
+            listOf(
+                Component.text("Right-click to jump to ($x, $y)", NamedTextColor.GRAY),
+                Component.text("Anchor: $name", NamedTextColor.GRAY),
+            )
+        )
         val pdc = meta.persistentDataContainer
         pdc.set(ANCHOR_KEY, PersistentDataType.BOOLEAN, true)
         pdc.set(ANCHOR_X_KEY, PersistentDataType.INTEGER, x)
@@ -161,7 +167,9 @@ object HotbarManager {
         val cells = InventoryManager.allSlotsForMaterial(profileId, material).map { it.x to it.y }
         if (cells.size < 2) return null
 
-        if (state.cycleMaterial != material || state.cycleChain.isEmpty() || state.cycleIndex !in state.cycleChain.indices) {
+        if (state.cycleMaterial != material || state.cycleChain.isEmpty() ||
+            state.cycleIndex !in state.cycleChain.indices
+        ) {
             val heldCell = (state.x + player.inventory.heldItemSlot - CENTER_SLOT) to state.y
             state.cycleMaterial = material
             state.cycleChain = CycleActions.buildCycleChain(cells, heldCell)
@@ -198,11 +206,12 @@ object HotbarManager {
     }
 
     fun loadBuffer(player: Player, name: String? = null): Boolean {
-        val entry = if (name != null) {
-            BufferManager.loadByName(player, name)
-        } else {
-            BufferManager.pop(player)
-        } ?: return false
+        val entry =
+            if (name != null) {
+                BufferManager.loadByName(player, name)
+            } else {
+                BufferManager.pop(player)
+            } ?: return false
 
         val state = getState(player)
         state.x = entry.position.first
@@ -231,6 +240,9 @@ object HotbarManager {
 
     fun getAnchorName(item: ItemStack?): String? {
         if (!isAnchorItem(item)) return null
-        return item?.itemMeta?.persistentDataContainer?.get(ANCHOR_NAME_KEY, PersistentDataType.STRING)
+        return item
+            ?.itemMeta
+            ?.persistentDataContainer
+            ?.get(ANCHOR_NAME_KEY, PersistentDataType.STRING)
     }
 }

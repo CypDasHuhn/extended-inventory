@@ -2,8 +2,8 @@ package dev.cypdashuhn.extendedinventory.db
 
 import dev.cypdashuhn.extendedinventory.hotbar.HotbarMode
 import dev.cypdashuhn.extendedinventory.hotbar.PlayerState
-import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
@@ -32,17 +32,20 @@ object PlayerStateStore {
                         x = it[PlayerStates.x],
                         y = it[PlayerStates.y],
                         anchored = it[PlayerStates.anchored],
-                        mode = runCatching { HotbarMode.valueOf(it[PlayerStates.mode]) }.getOrDefault(HotbarMode.FREE),
+                        mode =
+                            runCatching { HotbarMode.valueOf(it[PlayerStates.mode]) }
+                                .getOrDefault(HotbarMode.FREE),
                     )
                 }
         }
 
     fun save(uuid: String, state: PlayerState) {
         transaction {
-            val existing = PlayerStates
-                .selectAll()
-                .where { PlayerStates.playerUuid eq uuid }
-                .firstOrNull()
+            val existing =
+                PlayerStates
+                    .selectAll()
+                    .where { PlayerStates.playerUuid eq uuid }
+                    .firstOrNull()
             if (existing != null) {
                 PlayerStates.update({ PlayerStates.playerUuid eq uuid }) {
                     it[profileId] = state.profileId

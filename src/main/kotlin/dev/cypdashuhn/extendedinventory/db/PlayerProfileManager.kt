@@ -20,7 +20,9 @@ object PlayerProfileManager {
     object PlayerProfiles : IntIdTable("ei_player_profiles") {
         val playerId = integer("player_id")
         val profileId = integer("profile_id")
-        val status = enumerationByName<PlayerProfileStatus>("status", 16).default(PlayerProfileStatus.READ_ONLY)
+        val status =
+            enumerationByName<PlayerProfileStatus>("status", 16)
+                .default(PlayerProfileStatus.READ_ONLY)
     }
 
     data class PlayerProfileRow(
@@ -29,14 +31,19 @@ object PlayerProfileManager {
         val status: PlayerProfileStatus,
     )
 
-    fun assign(player: Player, profileId: Int, status: PlayerProfileStatus = PlayerProfileStatus.READ_ONLY) {
+    fun assign(
+        player: Player,
+        profileId: Int,
+        status: PlayerProfileStatus = PlayerProfileStatus.READ_ONLY
+    ) {
         val pid = playerId(player)
         transaction {
-            val existing = PlayerProfiles
-                .selectAll()
-                .where {
-                    (PlayerProfiles.playerId eq pid) and (PlayerProfiles.profileId eq profileId)
-                }.firstOrNull()
+            val existing =
+                PlayerProfiles
+                    .selectAll()
+                    .where {
+                        (PlayerProfiles.playerId eq pid) and (PlayerProfiles.profileId eq profileId)
+                    }.firstOrNull()
             if (existing != null) {
                 PlayerProfiles.update({
                     (PlayerProfiles.playerId eq pid) and (PlayerProfiles.profileId eq profileId)
@@ -71,7 +78,8 @@ object PlayerProfileManager {
             PlayerProfiles
                 .selectAll()
                 .where {
-                    (PlayerProfiles.playerId eq pid) and (PlayerProfiles.status eq PlayerProfileStatus.PRIMARY)
+                    (PlayerProfiles.playerId eq pid) and
+                        (PlayerProfiles.status eq PlayerProfileStatus.PRIMARY)
                 }.firstOrNull()
                 ?.get(PlayerProfiles.profileId)
         }
@@ -101,7 +109,13 @@ object PlayerProfileManager {
             PlayerProfiles
                 .selectAll()
                 .where { PlayerProfiles.profileId eq profileId }
-                .map { PlayerProfileRow(it[PlayerProfiles.playerId], it[PlayerProfiles.profileId], it[PlayerProfiles.status]) }
+                .map {
+                    PlayerProfileRow(
+                        it[PlayerProfiles.playerId],
+                        it[PlayerProfiles.profileId],
+                        it[PlayerProfiles.status]
+                    )
+                }
         }
 
     fun remove(player: Player, profileId: Int) {

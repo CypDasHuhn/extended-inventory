@@ -25,7 +25,10 @@ fun ChildrenScope.jumpTo() =
             val anchor = AnchorActions.getAnchorInfo(profileId, target)
             if (anchor != null) {
                 HotbarManager.jumpTo(player, anchor.x, anchor.y)
-                player.msg("${T.green}Jumped to anchor '${T.white}$target${T.green}' at (${anchor.x}, ${anchor.y}).")
+                player
+                    .msg(
+                        "${T.green}Jumped to anchor '${T.white}$target${T.green}' at (${anchor.x}, ${anchor.y})."
+                    )
             } else {
                 player.msg("${T.red}Anchor '${T.white}$target${T.red}' not found.")
             }
@@ -44,15 +47,24 @@ fun ChildrenScope.mode() =
     literal("mode") {
         literal("anchored").onExecute {
             HotbarManager.setAnchored(player, true)
-            player.msg("${T.green}Mode set to ${T.white}anchored${T.green}. Navigation locked, hotbar items locked.")
+            player
+                .msg(
+                    "${T.green}Mode set to ${T.white}anchored${T.green}. Navigation locked, hotbar items locked."
+                )
         }
         literal("free").onExecute {
             HotbarManager.setAnchored(player, false)
-            player.msg("${T.green}Mode set to ${T.white}free${T.green}. Navigation and hotbar unlocked.")
+            player
+                .msg(
+                    "${T.green}Mode set to ${T.white}free${T.green}. Navigation and hotbar unlocked."
+                )
         }
     }.onExecute {
         val state = HotbarManager.getState(player)
-        player.msg("${T.green}Anchored: ${T.white}${state.anchored}${T.green}, Mode: ${T.white}${state.mode}")
+        player
+            .msg(
+                "${T.green}Anchored: ${T.white}${state.anchored}${T.green}, Mode: ${T.white}${state.mode}"
+            )
     }
 
 fun ChildrenScope.direction(name: String, dx: Int, dy: Int) =
@@ -90,5 +102,8 @@ private fun cycleTo(player: Player, direction: Int) {
     }
 
     val dir = if (direction >= 0) "next" else "previous"
-    player.msg("${T.green}Cycled to $dir position: (${T.white}${target.first}${T.green}, ${T.white}${target.second}${T.green})")
+    player
+        .msg(
+            "${T.green}Cycled to $dir position: (${T.white}${target.first}${T.green}, ${T.white}${target.second}${T.green})"
+        )
 }

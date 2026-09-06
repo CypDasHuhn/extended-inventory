@@ -27,8 +27,10 @@ fun ChildrenScope.profiles() =
         literal("switch") {
             string("name")
                 .suggestProfileNames()
-                .matches(RESOURCE_NAME_REGEX) { raw -> player.msg("${T.red}Invalid profile name '${T.white}$raw${T.red}'.") }
-                .onExecute {
+                .matches(RESOURCE_NAME_REGEX) { raw ->
+                    player
+                        .msg("${T.red}Invalid profile name '${T.white}$raw${T.red}'.")
+                }.onExecute {
                     val name = arg<String>("name")
                     val profile = ProfileManager.findByName(name)
                     if (profile != null) {
@@ -40,7 +42,10 @@ fun ChildrenScope.profiles() =
                         val id = ProfileActions.createProfile(player, name)
                         HotbarManager.switchProfile(player, id)
                         HotbarManager.mirrorToHotbar(player)
-                        player.msg("${T.green}Created and switched to profile '${T.white}$name${T.green}'.")
+                        player
+                            .msg(
+                                "${T.green}Created and switched to profile '${T.white}$name${T.green}'."
+                            )
                     }
                 }
         }
@@ -79,8 +84,12 @@ fun ChildrenScope.profiles() =
         literal("settings") {
             string("name") {
                 literal("turn-private").onExecute { handleSettings(ProfileOpenness.PRIVATE) }
-                literal("turn-public-read").onExecute { handleSettings(ProfileOpenness.PUBLIC_READ) }
-                literal("turn-public-write").onExecute { handleSettings(ProfileOpenness.PUBLIC_WRITE) }
+                literal("turn-public-read").onExecute {
+                    handleSettings(ProfileOpenness.PUBLIC_READ)
+                }
+                literal("turn-public-write").onExecute {
+                    handleSettings(ProfileOpenness.PUBLIC_WRITE)
+                }
             }.suggestProfileNames()
         }
     }.onExecute {
@@ -90,26 +99,32 @@ fun ChildrenScope.profiles() =
 private fun Context.handleInvite(status: PlayerProfileStatus) {
     val profileName = arg<String>("profileName")
     val targetPlayer = arg<Player>("targetPlayer")
-    val profile = ProfileManager.findByName(profileName) ?: run {
-        player.msg("${T.red}Profile not found.")
-        return
-    }
+    val profile =
+        ProfileManager.findByName(profileName) ?: run {
+            player.msg("${T.red}Profile not found.")
+            return
+        }
     ProfileActions.invite(player, profile.id.value, targetPlayer, status)
     val accessLabel = if (status == PlayerProfileStatus.READ_ONLY) "read-only" else "full"
-    player.msg("${T.green}Invited ${targetPlayer.name} to '${T.white}$profileName${T.green}' with $accessLabel access.")
+    player
+        .msg(
+            "${T.green}Invited ${targetPlayer.name} to '${T.white}$profileName${T.green}' with $accessLabel access."
+        )
 }
 
 private fun Context.handleSettings(openness: ProfileOpenness) {
     val name = arg<String>("name")
-    val profile = ProfileManager.findByName(name) ?: run {
-        player.msg("${T.red}Profile not found.")
-        return
-    }
+    val profile =
+        ProfileManager.findByName(name) ?: run {
+            player.msg("${T.red}Profile not found.")
+            return
+        }
     ProfileActions.setOpenness(profile.id.value, openness)
-    val label = when (openness) {
-        ProfileOpenness.PRIVATE -> "private"
-        ProfileOpenness.PUBLIC_READ -> "public (read-only)"
-        ProfileOpenness.PUBLIC_WRITE -> "public (write access)"
-    }
+    val label =
+        when (openness) {
+            ProfileOpenness.PRIVATE -> "private"
+            ProfileOpenness.PUBLIC_READ -> "public (read-only)"
+            ProfileOpenness.PUBLIC_WRITE -> "public (write access)"
+        }
     player.msg("${T.green}Profile '${T.white}$name${T.green}' is now $label.")
 }

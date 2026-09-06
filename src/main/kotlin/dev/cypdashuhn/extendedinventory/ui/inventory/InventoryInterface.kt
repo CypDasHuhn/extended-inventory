@@ -22,17 +22,18 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
     ScrollInterfaceOptions<IIC>().apply {
         scrollerObject = ScrollerObject.None()
         inventoryTitle = { _, ctx ->
-            val suffix = when (ctx.mode) {
-                InterfaceMode.GROUP_DELETE_A -> " <dark_red>[Delete: pick corner A]"
-                InterfaceMode.GROUP_DELETE_B -> " <dark_red>[Delete: pick corner B]"
-                InterfaceMode.GROUP_MOVE_A -> " <green>[Move: pick corner A]"
-                InterfaceMode.GROUP_MOVE_B -> " <green>[Move: pick corner B]"
-                InterfaceMode.GROUP_MOVE_TARGET -> " <green>[Move: pick target]"
-                InterfaceMode.EDITING -> " <yellow>[Editing]"
-                InterfaceMode.SETTING_ANCHOR -> " <aqua>[Set Anchor]"
-                InterfaceMode.MATERIALIZING_ANCHOR -> " <light_purple>[Materialize Anchor]"
-                else -> ""
-            }
+            val suffix =
+                when (ctx.mode) {
+                    InterfaceMode.GROUP_DELETE_A -> " <dark_red>[Delete: pick corner A]"
+                    InterfaceMode.GROUP_DELETE_B -> " <dark_red>[Delete: pick corner B]"
+                    InterfaceMode.GROUP_MOVE_A -> " <green>[Move: pick corner A]"
+                    InterfaceMode.GROUP_MOVE_B -> " <green>[Move: pick corner B]"
+                    InterfaceMode.GROUP_MOVE_TARGET -> " <green>[Move: pick target]"
+                    InterfaceMode.EDITING -> " <yellow>[Editing]"
+                    InterfaceMode.SETTING_ANCHOR -> " <aqua>[Set Anchor]"
+                    InterfaceMode.MATERIALIZING_ANCHOR -> " <light_purple>[Materialize Anchor]"
+                    else -> ""
+                }
             mm("<white><bold>Extended Inventory$suffix")
         }
         sizeFromRows(6)
@@ -40,7 +41,10 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
 ) {
     override fun contentItem(): InterfaceItem<IIC> = super.contentItem().unlockedWhenEditing()
 
-    override fun clickInAreaItem(): InterfaceItem<IIC> = super.clickInAreaItem().unlockedWhenEditing()
+    override fun clickInAreaItem(): InterfaceItem<IIC> =
+        super
+            .clickInAreaItem()
+            .unlockedWhenEditing()
 
     override fun contentProvider(id: Int, context: IIC): GridSlotData? {
         val (gridX, gridY) = context.contentIdToGrid(id)
@@ -58,8 +62,19 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
 
         if (slot.anchorId != null) {
             val anchor = AnchorManager.findById(slot.anchorId)
-            val anchorItem = HotbarManager.createAnchorItem(anchor?.name ?: "???", anchor?.x ?: gridX, anchor?.y ?: gridY)
-            return GridSlotData(gridX, gridY, anchorItem, isAnchor = true, anchorName = anchor?.name)
+            val anchorItem =
+                HotbarManager.createAnchorItem(
+                    anchor?.name ?: "???",
+                    anchor?.x ?: gridX,
+                    anchor?.y ?: gridY
+                )
+            return GridSlotData(
+                gridX,
+                gridY,
+                anchorItem,
+                isAnchor = true,
+                anchorName = anchor?.name
+            )
         }
 
         if (slot.itemId != null) {
@@ -69,7 +84,10 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
         return GridSlotData(gridX, gridY, null)
     }
 
-    override fun contentDisplay(data: GridSlotData, context: IIC): InterfaceInfo<IIC>.() -> ItemStack =
+    override fun contentDisplay(
+        data: GridSlotData,
+        context: IIC
+    ): InterfaceInfo<IIC>.() -> ItemStack =
         {
             data.item ?: ItemStack(Material.AIR)
         }
@@ -112,4 +130,8 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
     }
 }
 
-private fun InterfaceItem<IIC>.unlockedWhenEditing(): InterfaceItem<IIC> = unlockedWhen { context.mode == InterfaceMode.EDITING }
+private fun InterfaceItem<IIC>.unlockedWhenEditing(): InterfaceItem<IIC> =
+    unlockedWhen {
+        context.mode ==
+            InterfaceMode.EDITING
+    }

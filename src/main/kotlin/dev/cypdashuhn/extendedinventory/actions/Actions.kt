@@ -53,21 +53,30 @@ object InventoryActions {
         SlotCache.batchRemove(profileId, r.positions)
     }
 
-    fun groupMove(profileId: Int, x1: Int, y1: Int, x2: Int, y2: Int, targetX: Int, targetY: Int): Boolean {
+    fun groupMove(
+        profileId: Int,
+        x1: Int,
+        y1: Int,
+        x2: Int,
+        y2: Int,
+        targetX: Int,
+        targetY: Int
+    ): Boolean {
         val r = region(x1, y1, x2, y2)
         val sourceSlots = InventoryManager.getRegion(profileId, x1, y1, x2, y2)
 
-        val moveEntries = sourceSlots.mapNotNull { slot ->
-            val dx = slot.x - r.minX
-            val dy = slot.y - r.minY
-            val newX = targetX + dx
-            val newY = targetY + dy
-            if (slot.itemId != null) {
-                Triple(newX, newY, slot.itemId)
-            } else {
-                null
+        val moveEntries =
+            sourceSlots.mapNotNull { slot ->
+                val dx = slot.x - r.minX
+                val dy = slot.y - r.minY
+                val newX = targetX + dx
+                val newY = targetY + dy
+                if (slot.itemId != null) {
+                    Triple(newX, newY, slot.itemId)
+                } else {
+                    null
+                }
             }
-        }
 
         if (moveEntries.isEmpty()) return false
 
@@ -76,7 +85,13 @@ object InventoryActions {
         return true
     }
 
-    fun getRegionSlots(profileId: Int, x1: Int, y1: Int, x2: Int, y2: Int): List<InventoryManager.SlotData> =
+    fun getRegionSlots(
+        profileId: Int,
+        x1: Int,
+        y1: Int,
+        x2: Int,
+        y2: Int
+    ): List<InventoryManager.SlotData> =
         InventoryManager
             .getRegion(profileId, x1, y1, x2, y2)
 }
@@ -106,7 +121,11 @@ object ProfileActions {
 
     fun invite(player: Player, profileId: Int, targetPlayer: Player, status: PlayerProfileStatus) {
         val callerStatus = PlayerProfileManager.getStatus(player, profileId)
-        if (callerStatus != PlayerProfileStatus.PRIMARY && callerStatus != PlayerProfileStatus.WRITE_READ) return
+        if (callerStatus != PlayerProfileStatus.PRIMARY &&
+            callerStatus != PlayerProfileStatus.WRITE_READ
+        ) {
+            return
+        }
         PlayerProfileManager.assign(targetPlayer, profileId, status)
     }
 
@@ -116,11 +135,16 @@ object ProfileActions {
 }
 
 object AnchorActions {
-    fun addAnchor(profileId: Int, name: String, x: Int, y: Int): Int = AnchorManager.create(profileId, name, x, y)
+    fun addAnchor(profileId: Int, name: String, x: Int, y: Int): Int =
+        AnchorManager.create(profileId, name, x, y)
 
     fun deleteAnchor(player: Player, profileId: Int, name: String): Boolean {
         val status = PlayerProfileManager.getStatus(player, profileId)
-        if (status != PlayerProfileStatus.PRIMARY && status != PlayerProfileStatus.WRITE_READ) return false
+        if (status != PlayerProfileStatus.PRIMARY &&
+            status != PlayerProfileStatus.WRITE_READ
+        ) {
+            return false
+        }
         val anchor = AnchorManager.findByName(profileId, name) ?: return false
         AnchorManager.delete(anchor.id)
         return true
@@ -128,13 +152,19 @@ object AnchorActions {
 
     fun renameAnchor(player: Player, profileId: Int, oldName: String, newName: String): Boolean {
         val status = PlayerProfileManager.getStatus(player, profileId)
-        if (status != PlayerProfileStatus.PRIMARY && status != PlayerProfileStatus.WRITE_READ) return false
+        if (status != PlayerProfileStatus.PRIMARY &&
+            status != PlayerProfileStatus.WRITE_READ
+        ) {
+            return false
+        }
         val anchor = AnchorManager.findByName(profileId, oldName) ?: return false
         AnchorManager.rename(anchor.id, newName)
         return true
     }
 
-    fun getAnchorInfo(profileId: Int, name: String): AnchorManager.AnchorData? = AnchorManager.findByName(profileId, name)
+    fun getAnchorInfo(profileId: Int, name: String): AnchorManager.AnchorData? =
+        AnchorManager
+            .findByName(profileId, name)
 }
 
 object CycleActions {

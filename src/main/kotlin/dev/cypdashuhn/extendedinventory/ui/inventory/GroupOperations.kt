@@ -15,11 +15,16 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
         inventoryItem()
             .atSlot(6, 2)
             .usedWhen { context.isIdle }
-            .displayAs(createItem(Material.LAVA_BUCKET, mm("<red>Group Delete"), listOf(
-                mm("<gray>Select two corners to delete"),
-                mm("<gray>all items in the region."),
-            )))
-            .onClick {
+            .displayAs(
+                createItem(
+                    Material.LAVA_BUCKET,
+                    mm("<red>Group Delete"),
+                    listOf(
+                        mm("<gray>Select two corners to delete"),
+                        mm("<gray>all items in the region."),
+                    )
+                )
+            ).onClick {
                 context.clearGroupSelection()
                 context.mode = InterfaceMode.GROUP_DELETE_A
                 InventoryInterface.openInventory(click.player, context)
@@ -27,11 +32,16 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
         inventoryItem()
             .atSlot(6, 3)
             .usedWhen { context.isIdle }
-            .displayAs(createItem(Material.PISTON, mm("<green>Group Move"), listOf(
-                mm("<gray>Select two corners for source,"),
-                mm("<gray>then a third for target."),
-            )))
-            .onClick {
+            .displayAs(
+                createItem(
+                    Material.PISTON,
+                    mm("<green>Group Move"),
+                    listOf(
+                        mm("<gray>Select two corners for source,"),
+                        mm("<gray>then a third for target."),
+                    )
+                )
+            ).onClick {
                 context.clearGroupSelection()
                 context.mode = InterfaceMode.GROUP_MOVE_A
                 InventoryInterface.openInventory(click.player, context)
@@ -39,8 +49,13 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
         inventoryItem()
             .atSlot(6, 5)
             .usedWhen { context.isGroupMode }
-            .displayAs(createItem(Material.BARRIER, mm("<red>Cancel"), listOf(mm("<gray>Exit group mode."))))
-            .onClick {
+            .displayAs(
+                createItem(
+                    Material.BARRIER,
+                    mm("<red>Cancel"),
+                    listOf(mm("<gray>Exit group mode."))
+                )
+            ).onClick {
                 context.clearGroupSelection()
                 context.mode = InterfaceMode.NORMAL
                 InventoryInterface.openInventory(click.player, context)
@@ -49,11 +64,16 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
             .atSlot(6, 6)
             .priority(10)
             .usedWhen { context.cornersSet && !context.targetSet && !context.groupDeleteConfirmed }
-            .displayAs(createItem(Material.LAVA_BUCKET, mm("<red><bold>DELETE REGION"), listOf(
-                mm("<gray>Delete all items between corners."),
-                mm("<red>Click again to confirm."),
-            )))
-            .onClick {
+            .displayAs(
+                createItem(
+                    Material.LAVA_BUCKET,
+                    mm("<red><bold>DELETE REGION"),
+                    listOf(
+                        mm("<gray>Delete all items between corners."),
+                        mm("<red>Click again to confirm."),
+                    )
+                )
+            ).onClick {
                 context.groupDeleteConfirmed = true
                 InventoryInterface.openInventory(click.player, context)
             },
@@ -61,14 +81,20 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
             .atSlot(6, 6)
             .priority(11)
             .usedWhen { context.cornersSet && !context.targetSet && context.groupDeleteConfirmed }
-            .displayAs(createItem(Material.LAVA_BUCKET, mm("<red><bold>CONFIRM DELETE"), listOf(
-                mm("<gray>This cannot be undone!"),
-                mm("<red><bold>Click to execute."),
-            )))
-            .onClick {
+            .displayAs(
+                createItem(
+                    Material.LAVA_BUCKET,
+                    mm("<red><bold>CONFIRM DELETE"),
+                    listOf(
+                        mm("<gray>This cannot be undone!"),
+                        mm("<red><bold>Click to execute."),
+                    )
+                )
+            ).onClick {
                 val a = context.cornerA!!
                 val b = context.cornerB!!
-                InventoryActions.groupDelete(context.profileId, a.first, a.second, b.first, b.second)
+                InventoryActions
+                    .groupDelete(context.profileId, a.first, a.second, b.first, b.second)
                 SlotCache.invalidateProfile(context.profileId)
                 context.clearGroupSelection()
                 context.mode = InterfaceMode.NORMAL
@@ -79,11 +105,16 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
             .atSlot(6, 6)
             .priority(10)
             .usedWhen { context.targetSet && !context.groupMoveConfirmed }
-            .displayAs(createItem(Material.PISTON, mm("<green><bold>MOVE REGION"), listOf(
-                mm("<gray>Move items to target region."),
-                mm("<green>Click again to confirm."),
-            )))
-            .onClick {
+            .displayAs(
+                createItem(
+                    Material.PISTON,
+                    mm("<green><bold>MOVE REGION"),
+                    listOf(
+                        mm("<gray>Move items to target region."),
+                        mm("<green>Click again to confirm."),
+                    )
+                )
+            ).onClick {
                 context.groupMoveConfirmed = true
                 InventoryInterface.openInventory(click.player, context)
             },
@@ -91,15 +122,29 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
             .atSlot(6, 6)
             .priority(11)
             .usedWhen { context.targetSet && context.groupMoveConfirmed }
-            .displayAs(createItem(Material.PISTON, mm("<green><bold>CONFIRM MOVE"), listOf(
-                mm("<gray>Move items to target."),
-                mm("<green><bold>Click to execute."),
-            )))
-            .onClick {
+            .displayAs(
+                createItem(
+                    Material.PISTON,
+                    mm("<green><bold>CONFIRM MOVE"),
+                    listOf(
+                        mm("<gray>Move items to target."),
+                        mm("<green><bold>Click to execute."),
+                    )
+                )
+            ).onClick {
                 val a = context.cornerA!!
                 val b = context.cornerB!!
                 val t = context.targetCorner!!
-                InventoryActions.groupMove(context.profileId, a.first, a.second, b.first, b.second, t.first, t.second)
+                InventoryActions
+                    .groupMove(
+                        context.profileId,
+                        a.first,
+                        a.second,
+                        b.first,
+                        b.second,
+                        t.first,
+                        t.second
+                    )
                 SlotCache.invalidateProfile(context.profileId)
                 context.clearGroupSelection()
                 context.mode = InterfaceMode.NORMAL
@@ -119,7 +164,11 @@ internal fun groupSelectionOverlayItems(): List<InterfaceItem<IIC>> =
                 gx == a.first && gy == a.second
             }.displayAs {
                 val a = context.cornerA!!
-                createItem(Material.RED_STAINED_GLASS_PANE, mm("<red>Corner A"), listOf(mm("<gray>(${a.first}, ${a.second})")))
+                createItem(
+                    Material.RED_STAINED_GLASS_PANE,
+                    mm("<red>Corner A"),
+                    listOf(mm("<gray>(${a.first}, ${a.second})"))
+                )
             },
         inventoryItem()
             .atSlots(InventoryInterface.contentArea.allValidSlots())
@@ -130,7 +179,11 @@ internal fun groupSelectionOverlayItems(): List<InterfaceItem<IIC>> =
                 gx == b.first && gy == b.second
             }.displayAs {
                 val b = context.cornerB!!
-                createItem(Material.BLUE_STAINED_GLASS_PANE, mm("<blue>Corner B"), listOf(mm("<gray>(${b.first}, ${b.second})")))
+                createItem(
+                    Material.BLUE_STAINED_GLASS_PANE,
+                    mm("<blue>Corner B"),
+                    listOf(mm("<gray>(${b.first}, ${b.second})"))
+                )
             },
         inventoryItem()
             .atSlots(InventoryInterface.contentArea.allValidSlots())
@@ -141,7 +194,11 @@ internal fun groupSelectionOverlayItems(): List<InterfaceItem<IIC>> =
                 (gx to gy) in context.targetPreviewPositions
             }.displayAs {
                 val (gx, gy) = context.slotToGrid(slot)
-                createItem(Material.GREEN_STAINED_GLASS_PANE, mm("<green>Target"), listOf(mm("<gray>($gx, $gy)")))
+                createItem(
+                    Material.GREEN_STAINED_GLASS_PANE,
+                    mm("<green>Target"),
+                    listOf(mm("<gray>($gx, $gy)"))
+                )
             },
     )
 

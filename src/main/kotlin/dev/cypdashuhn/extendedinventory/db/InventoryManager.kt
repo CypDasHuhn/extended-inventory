@@ -31,22 +31,26 @@ object InventoryManager {
 
     fun setItem(profileId: Int, x: Int, y: Int, itemId: Int?) =
         transaction {
-            val existing = InventorySlots
-                .selectAll()
-                .where {
-                    (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and (InventorySlots.y eq y)
-                }.firstOrNull()
+            val existing =
+                InventorySlots
+                    .selectAll()
+                    .where {
+                        (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and
+                            (InventorySlots.y eq y)
+                    }.firstOrNull()
             if (existing != null) {
                 if (itemId != null) {
                     InventorySlots.update({
-                        (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and (InventorySlots.y eq y)
+                        (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and
+                            (InventorySlots.y eq y)
                     }) {
                         it[InventorySlots.itemId] = itemId
                         it[anchorId] = null
                     }
                 } else {
                     InventorySlots.deleteWhere {
-                        (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and (InventorySlots.y eq y)
+                        (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and
+                            (InventorySlots.y eq y)
                     }
                 }
             } else if (itemId != null) {
@@ -61,14 +65,17 @@ object InventoryManager {
 
     fun setAnchor(profileId: Int, x: Int, y: Int, anchorId: Int) =
         transaction {
-            val existing = InventorySlots
-                .selectAll()
-                .where {
-                    (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and (InventorySlots.y eq y)
-                }.firstOrNull()
+            val existing =
+                InventorySlots
+                    .selectAll()
+                    .where {
+                        (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and
+                            (InventorySlots.y eq y)
+                    }.firstOrNull()
             if (existing != null) {
                 InventorySlots.update({
-                    (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and (InventorySlots.y eq y)
+                    (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and
+                        (InventorySlots.y eq y)
                 }) {
                     it[InventorySlots.anchorId] = anchorId
                     it[itemId] = null
@@ -88,7 +95,8 @@ object InventoryManager {
             InventorySlots
                 .selectAll()
                 .where {
-                    (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and (InventorySlots.y eq y)
+                    (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and
+                        (InventorySlots.y eq y)
                 }.firstOrNull()
                 ?.let { rowToSlot(it) }
         }
@@ -96,7 +104,8 @@ object InventoryManager {
     fun removeSlot(profileId: Int, x: Int, y: Int) =
         transaction {
             InventorySlots.deleteWhere {
-                (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and (InventorySlots.y eq y)
+                (InventorySlots.profileId eq profileId) and (InventorySlots.x eq x) and
+                    (InventorySlots.y eq y)
             }
         }
 
@@ -150,13 +159,14 @@ object InventoryManager {
         if (entries.isEmpty()) return
         transaction {
             for ((x, y, itemId) in entries) {
-                val existing = InventorySlots
-                    .selectAll()
-                    .where {
-                        (InventorySlots.profileId eq profileId) and
-                            (InventorySlots.x eq x) and
-                            (InventorySlots.y eq y)
-                    }.firstOrNull()
+                val existing =
+                    InventorySlots
+                        .selectAll()
+                        .where {
+                            (InventorySlots.profileId eq profileId) and
+                                (InventorySlots.x eq x) and
+                                (InventorySlots.y eq y)
+                        }.firstOrNull()
                 if (existing != null) {
                     InventorySlots.update({
                         (InventorySlots.profileId eq profileId) and
@@ -208,11 +218,18 @@ object InventoryManager {
             InventorySlots
                 .selectAll()
                 .where {
-                    (InventorySlots.profileId eq profileId) and (InventorySlots.itemId inList itemIds)
+                    (InventorySlots.profileId eq profileId) and
+                        (InventorySlots.itemId inList itemIds)
                 }.map { rowToSlot(it) }
         }
     }
 
     private fun rowToSlot(row: org.jetbrains.exposed.sql.ResultRow): SlotData =
-        SlotData(row[InventorySlots.profileId], row[InventorySlots.x], row[InventorySlots.y], row[InventorySlots.itemId], row[InventorySlots.anchorId])
+        SlotData(
+            row[InventorySlots.profileId],
+            row[InventorySlots.x],
+            row[InventorySlots.y],
+            row[InventorySlots.itemId],
+            row[InventorySlots.anchorId]
+        )
 }

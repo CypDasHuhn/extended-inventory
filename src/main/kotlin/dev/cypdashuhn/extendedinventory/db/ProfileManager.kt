@@ -19,7 +19,9 @@ object ProfileManager {
     object Profiles : IntIdTable("ei_profiles") {
         val name = varchar("name", 64)
         val createdByPlayerId = integer("created_by_player_id")
-        val openness = enumerationByName<ProfileOpenness>("openness", 16).default(ProfileOpenness.PRIVATE)
+        val openness =
+            enumerationByName<ProfileOpenness>("openness", 16)
+                .default(ProfileOpenness.PRIVATE)
     }
 
     class ProfileEntry(

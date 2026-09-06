@@ -15,16 +15,26 @@ internal fun anchorActionItems(): List<InterfaceItem<IIC>> =
         inventoryItem()
             .atSlot(6, 5)
             .usedWhen { context.isIdle }
-            .displayAs(createItem(Material.ENDER_PEARL, mm("<white>Set Anchor"), listOf(mm("<gray>Click a slot to create an anchor."))))
-            .onClick {
+            .displayAs(
+                createItem(
+                    Material.ENDER_PEARL,
+                    mm("<white>Set Anchor"),
+                    listOf(mm("<gray>Click a slot to create an anchor."))
+                )
+            ).onClick {
                 context.mode = InterfaceMode.SETTING_ANCHOR
                 InventoryInterface.openInventory(click.player, context)
             },
         inventoryItem()
             .atSlot(6, 6)
             .usedWhen { context.isIdle }
-            .displayAs(createItem(Material.ITEM_FRAME, mm("<white>Materialize Anchor"), listOf(mm("<gray>Get a materialized anchor item."))))
-            .onClick {
+            .displayAs(
+                createItem(
+                    Material.ITEM_FRAME,
+                    mm("<white>Materialize Anchor"),
+                    listOf(mm("<gray>Get a materialized anchor item."))
+                )
+            ).onClick {
                 context.mode = InterfaceMode.MATERIALIZING_ANCHOR
                 InventoryInterface.openInventory(click.player, context)
             },

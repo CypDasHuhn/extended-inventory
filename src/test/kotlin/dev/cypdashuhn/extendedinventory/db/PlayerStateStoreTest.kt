@@ -16,7 +16,17 @@ class PlayerStateStoreTest {
 
     @Test
     fun `save then load round trips state`() {
-        PlayerStateStore.save("uuid-1", PlayerState(profileId = 3, x = 12, y = -7, anchored = true, mode = HotbarMode.LOCKED))
+        PlayerStateStore
+            .save(
+                "uuid-1",
+                PlayerState(
+                    profileId = 3,
+                    x = 12,
+                    y = -7,
+                    anchored = true,
+                    mode = HotbarMode.LOCKED
+                )
+            )
 
         val loaded = PlayerStateStore.load("uuid-1")
 
@@ -30,7 +40,11 @@ class PlayerStateStoreTest {
     @Test
     fun `save overwrites existing state`() {
         PlayerStateStore.save("uuid-1", PlayerState(profileId = 1, x = 0, y = 0))
-        PlayerStateStore.save("uuid-1", PlayerState(profileId = 2, x = 5, y = 9, anchored = true, mode = HotbarMode.LOCKED))
+        PlayerStateStore
+            .save(
+                "uuid-1",
+                PlayerState(profileId = 2, x = 5, y = 9, anchored = true, mode = HotbarMode.LOCKED)
+            )
 
         val loaded = PlayerStateStore.load("uuid-1")
 

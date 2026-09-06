@@ -23,7 +23,8 @@ object SlotCache {
         return rowMap.toMap()
     }
 
-    fun getSlot(profileId: Int, x: Int, y: Int): InventoryManager.SlotData? = getRow(profileId, y)[x]
+    fun getSlot(profileId: Int, x: Int, y: Int): InventoryManager.SlotData? =
+        getRow(profileId, y)[x]
 
     fun setItem(profileId: Int, x: Int, y: Int, itemId: Int?) {
         InventoryManager.setItem(profileId, x, y, itemId)

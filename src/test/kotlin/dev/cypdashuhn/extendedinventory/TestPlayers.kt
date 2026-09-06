@@ -6,16 +6,17 @@ import java.util.UUID
 
 object TestPlayers {
     fun player(uuid: UUID = UUID.randomUUID()): Player {
-        val handler = java.lang.reflect.InvocationHandler { _, method, _ ->
-            when (method.name) {
-                "getUniqueId" -> uuid
-                "getName" -> "TestPlayer"
-                "toString" -> "MockPlayer($uuid)"
-                "hashCode" -> uuid.hashCode()
-                "equals" -> method.declaringClass == Any::class.java
-                else -> defaultFor(method.returnType)
+        val handler =
+            java.lang.reflect.InvocationHandler { _, method, _ ->
+                when (method.name) {
+                    "getUniqueId" -> uuid
+                    "getName" -> "TestPlayer"
+                    "toString" -> "MockPlayer($uuid)"
+                    "hashCode" -> uuid.hashCode()
+                    "equals" -> method.declaringClass == Any::class.java
+                    else -> defaultFor(method.returnType)
+                }
             }
-        }
         return Proxy.newProxyInstance(
             Player::class.java.classLoader,
             arrayOf(Player::class.java),

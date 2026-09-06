@@ -15,10 +15,13 @@ object ChatInputManager : Listener {
 
     fun awaitInput(player: Player, prompt: String? = null, callback: (String) -> Unit) {
         listeners[player.uniqueId] = callback
-        RoosterCore.plugin.server.scheduler.runTask(RoosterCore.plugin, Runnable {
-            player.closeInventory()
-            if (prompt != null) player.sendMessage(mm(prompt))
-        })
+        RoosterCore.plugin.server.scheduler.runTask(
+            RoosterCore.plugin,
+            Runnable {
+                player.closeInventory()
+                if (prompt != null) player.sendMessage(mm(prompt))
+            }
+        )
     }
 
     @EventHandler
@@ -26,8 +29,11 @@ object ChatInputManager : Listener {
         val callback = listeners.remove(event.player.uniqueId) ?: return
         event.isCancelled = true
         val message = PlainTextComponentSerializer.plainText().serialize(event.message())
-        RoosterCore.plugin.server.scheduler.runTask(RoosterCore.plugin, Runnable {
-            callback(message)
-        })
+        RoosterCore.plugin.server.scheduler.runTask(
+            RoosterCore.plugin,
+            Runnable {
+                callback(message)
+            }
+        )
     }
 }

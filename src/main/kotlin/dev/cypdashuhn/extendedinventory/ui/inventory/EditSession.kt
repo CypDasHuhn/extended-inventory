@@ -16,16 +16,26 @@ internal fun editSessionItems(): List<InterfaceItem<IIC>> =
         inventoryItem()
             .atSlot(6, 4)
             .usedWhen { context.isIdle }
-            .displayAs(createItem(Material.BOOK, mm("<white>Edit Mode"), listOf(mm("<gray>Click to edit inventory slots."))))
-            .onClick {
+            .displayAs(
+                createItem(
+                    Material.BOOK,
+                    mm("<white>Edit Mode"),
+                    listOf(mm("<gray>Click to edit inventory slots."))
+                )
+            ).onClick {
                 context.mode = InterfaceMode.EDITING
                 InventoryInterface.openInventory(click.player, context)
             },
         inventoryItem()
             .atSlot(6, 3)
             .usedWhen { context.mode == InterfaceMode.EDITING }
-            .displayAs(createItem(Material.WRITABLE_BOOK, mm("<green>Save"), listOf(mm("<gray>Save changes and exit edit mode."))))
-            .onClick {
+            .displayAs(
+                createItem(
+                    Material.WRITABLE_BOOK,
+                    mm("<green>Save"),
+                    listOf(mm("<gray>Save changes and exit edit mode."))
+                )
+            ).onClick {
                 stagePendingEdits(click.player, context)
                 savePendingEdits(click.player, context)
                 context.mode = InterfaceMode.NORMAL
@@ -34,8 +44,13 @@ internal fun editSessionItems(): List<InterfaceItem<IIC>> =
         inventoryItem()
             .atSlot(6, 4)
             .usedWhen { context.mode == InterfaceMode.EDITING }
-            .displayAs(createItem(Material.BARRIER, mm("<red>Discard"), listOf(mm("<gray>Discard changes and exit edit mode."))))
-            .onClick {
+            .displayAs(
+                createItem(
+                    Material.BARRIER,
+                    mm("<red>Discard"),
+                    listOf(mm("<gray>Discard changes and exit edit mode."))
+                )
+            ).onClick {
                 context.pendingChanges.clear()
                 context.mode = InterfaceMode.NORMAL
                 InventoryInterface.openInventory(click.player, context)
@@ -49,7 +64,9 @@ internal fun parsePendingKey(key: String): Pair<Int, Int> {
     return key.substring(0, i).toInt() to key.substring(i + 1).toInt()
 }
 
-internal fun encodePendingItem(item: ItemStack): String = ItemManager.encode(item.serializeAsBytes())
+internal fun encodePendingItem(item: ItemStack): String =
+    ItemManager
+        .encode(item.serializeAsBytes())
 
 internal fun decodePendingItem(encoded: String): ItemStack? =
     if (encoded.isEmpty()) null else ItemStack.deserializeBytes(ItemManager.decode(encoded))
@@ -61,7 +78,8 @@ internal fun stagePendingEdits(player: Player, ctx: IIC) {
         val key = pendingKey(gridX, gridY)
         if (SlotCache.getSlot(ctx.profileId, gridX, gridY)?.anchorId != null) continue
         val item = inventory.getItem(slot)
-        ctx.pendingChanges[key] = if (item == null || item.type.isAir) "" else encodePendingItem(item)
+        ctx.pendingChanges[key] =
+            if (item == null || item.type.isAir) "" else encodePendingItem(item)
     }
 }
 

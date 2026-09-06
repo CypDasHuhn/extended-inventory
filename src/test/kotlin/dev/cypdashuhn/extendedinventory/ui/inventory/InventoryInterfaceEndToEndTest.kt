@@ -31,7 +31,11 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
         step("click edit mode (49)") { click(49) }
 
         assertEquals(InterfaceMode.EDITING, context().mode)
-        assertEquals(Material.WRITABLE_BOOK, slotMaterial(48), "slot 48 should become the Save button")
+        assertEquals(
+            Material.WRITABLE_BOOK,
+            slotMaterial(48),
+            "slot 48 should become the Save button"
+        )
         assertEquals(Material.BARRIER, slotMaterial(49), "slot 49 should become the Discard button")
 
         // ── Step 3: place STONE at the center slot (0,0) ────────────────
@@ -46,14 +50,26 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
         step("save (48)") { click(48) }
 
         assertEquals(InterfaceMode.NORMAL, context().mode)
-        assertEquals(Material.STONE, UiHarness.dumpItem(1, 0, 0), "saved item should be in the DB at (0,0)")
-        assertEquals(Material.STONE, slotMaterial(22), "saved item should be visible at center slot (22)")
+        assertEquals(
+            Material.STONE,
+            UiHarness.dumpItem(1, 0, 0),
+            "saved item should be in the DB at (0,0)"
+        )
+        assertEquals(
+            Material.STONE,
+            slotMaterial(22),
+            "saved item should be visible at center slot (22)"
+        )
 
         // ── Step 5: scroll ───────────────────────────────────────────────
         step("scroll down (53)") { click(53) }
 
         assertEquals(1, context().position)
-        assertEquals(Material.STONE, slotMaterial(13), "after scrolling, the item should move up one row to slot 13")
+        assertEquals(
+            Material.STONE,
+            slotMaterial(13),
+            "after scrolling, the item should move up one row to slot 13"
+        )
         assertNull(slotMaterial(22), "center slot (22) should now show grid (0,1), which is empty")
     }
 
@@ -74,8 +90,16 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
 
         step("scroll down (53)") { click(53) }
         assertEquals(1, context().position)
-        assertEquals(Material.STONE, slotMaterial(13), "after scroll, STONE should move up one row to slot 13")
-        assertEquals(Material.DIRT, slotMaterial(22), "after scroll, DIRT should move up one row to slot 22")
+        assertEquals(
+            Material.STONE,
+            slotMaterial(13),
+            "after scroll, STONE should move up one row to slot 13"
+        )
+        assertEquals(
+            Material.DIRT,
+            slotMaterial(22),
+            "after scroll, DIRT should move up one row to slot 22"
+        )
     }
 
     @Test
@@ -145,8 +169,16 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
 
         step("click center (22) in normal mode") { click(22) }
 
-        assertEquals(Material.STONE, cursor()?.type, "normal-mode click should copy the item to the cursor")
-        assertEquals(Material.STONE, UiHarness.dumpItem(1, 0, 0), "source item should remain stored")
+        assertEquals(
+            Material.STONE,
+            cursor()?.type,
+            "normal-mode click should copy the item to the cursor"
+        )
+        assertEquals(
+            Material.STONE,
+            UiHarness.dumpItem(1, 0, 0),
+            "source item should remain stored"
+        )
     }
 
     @Test
@@ -158,8 +190,15 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
         val event = stepEvent("click own inventory slot") { clickBottom(0) }
 
         assertFalse(event.isCancelled, "player-inventory clicks must pass through to vanilla")
-        assertEquals(InterfaceMode.EDITING, context().mode, "interface must not react to a player-inventory click")
-        assertTrue(context().pendingChanges.isEmpty(), "no pending change should be recorded for a player-inventory click")
+        assertEquals(
+            InterfaceMode.EDITING,
+            context().mode,
+            "interface must not react to a player-inventory click"
+        )
+        assertTrue(
+            context().pendingChanges.isEmpty(),
+            "no pending change should be recorded for a player-inventory click"
+        )
     }
 
     @Test
@@ -172,7 +211,10 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
 
         assertFalse(event.isCancelled, "content clicks in edit mode must pass through to vanilla")
         assertEquals(InterfaceMode.EDITING, context().mode)
-        assertTrue(context().pendingChanges.isEmpty(), "no pending change should be recorded before save")
+        assertTrue(
+            context().pendingChanges.isEmpty(),
+            "no pending change should be recorded before save"
+        )
     }
 
     @Test
@@ -194,7 +236,11 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
 
         step("save (48)") { click(48) }
 
-        assertEquals(Material.STONE, UiHarness.dumpItem(1, 0, 0), "edit should survive scrolling and be saved")
+        assertEquals(
+            Material.STONE,
+            UiHarness.dumpItem(1, 0, 0),
+            "edit should survive scrolling and be saved"
+        )
     }
 
     @Test
@@ -218,14 +264,20 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
 
         step("save (48)") { click(48) }
 
-        assertEquals(Material.STONE, UiHarness.dumpItem(1, 0, 0), "item should be persisted after save")
+        assertEquals(
+            Material.STONE,
+            UiHarness.dumpItem(1, 0, 0),
+            "item should be persisted after save"
+        )
     }
 }
 
 object InventoryManagerSeed {
     fun seed(profileId: Int, x: Int, y: Int, material: Material) {
         dev.cypdashuhn.extendedinventory.db.InventoryManager.setItem(
-            profileId, x, y,
+            profileId,
+            x,
+            y,
             dev.cypdashuhn.extendedinventory.db.ItemManager
                 .store(ItemStack(material)),
         )

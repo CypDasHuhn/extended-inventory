@@ -70,13 +70,18 @@ abstract class UiHarness {
     /** Clicks a slot in the player's own inventory (the bottom part of the view). */
     fun clickBottom(slot: Int, clickType: ClickType = ClickType.LEFT): InventoryClickEvent {
         val topSize = player.openInventory.topInventory.size
-        return PlayerSimulation(player).simulateInventoryClick(player.openInventory, clickType, topSize + slot)
+        return PlayerSimulation(player).simulateInventoryClick(
+            player.openInventory,
+            clickType,
+            topSize + slot
+        )
     }
 
     fun setCursor(item: ItemStack?) = player.setItemOnCursor(item ?: ItemStack.empty())
 
     /** Directly writes a slot in the top chest, simulating what vanilla does on an uncancelled click. */
-    fun setChest(slot: Int, item: ItemStack?) = player.openInventory.topInventory.setItem(slot, item)
+    fun setChest(slot: Int, item: ItemStack?) =
+        player.openInventory.topInventory.setItem(slot, item)
 
     fun cursor(): ItemStack? = player.itemOnCursor
 
@@ -88,7 +93,11 @@ abstract class UiHarness {
     fun context(): InventoryInterfaceContext = InventoryInterface.getContext(player)
 
     fun open(centerX: Int = 0, centerY: Int = 0) {
-        InventoryInterface.openInventory(player, InventoryInterfaceContext(profileId = 1, centerX = centerX, centerY = centerY))
+        InventoryInterface
+            .openInventory(
+                player,
+                InventoryInterfaceContext(profileId = 1, centerX = centerX, centerY = centerY)
+            )
         tick()
     }
 
@@ -116,19 +125,22 @@ abstract class UiHarness {
 
         val ctx = context()
         sb
-            .appendLine("context: profileId=${ctx.profileId} center=(${ctx.centerX}, ${ctx.centerY}) mode=${ctx.mode} position=${ctx.position}")
+            .appendLine(
+                "context: profileId=${ctx.profileId} center=(${ctx.centerX}, ${ctx.centerY}) mode=${ctx.mode} position=${ctx.position}"
+            )
         sb.appendLine("pendingChanges=${ctx.pendingChanges}")
         sb.appendLine("cursor=${cursor()?.type ?: "-"}")
 
         sb.appendLine("top inventory (slot: material):")
         val inv = player.openInventory.topInventory
         for (row in 0 until 6) {
-            val line = (0 until 9).joinToString(" ") { col ->
-                val slot = row * 9 + col
-                val item = inv.getItem(slot)
-                val name = if (item == null || item.type.isAir) "-" else item.type.name
-                "%02d:%s".format(slot, name.padEnd(20))
-            }
+            val line =
+                (0 until 9).joinToString(" ") { col ->
+                    val slot = row * 9 + col
+                    val item = inv.getItem(slot)
+                    val name = if (item == null || item.type.isAir) "-" else item.type.name
+                    "%02d:%s".format(slot, name.padEnd(20))
+                }
             sb.appendLine("  $line")
         }
         traceFile.appendText(sb.toString())

@@ -66,7 +66,13 @@ object AnchorManager {
                     (Anchors.profileId eq profileId) and (Anchors.name eq name)
                 }.firstOrNull()
                 ?.let {
-                    AnchorData(it[Anchors.id].value, it[Anchors.profileId], it[Anchors.x], it[Anchors.y], it[Anchors.name])
+                    AnchorData(
+                        it[Anchors.id].value,
+                        it[Anchors.profileId],
+                        it[Anchors.x],
+                        it[Anchors.y],
+                        it[Anchors.name]
+                    )
                 }
         }
 
@@ -78,7 +84,13 @@ object AnchorManager {
                     (Anchors.profileId eq profileId) and (Anchors.x eq x) and (Anchors.y eq y)
                 }.firstOrNull()
                 ?.let {
-                    AnchorData(it[Anchors.id].value, it[Anchors.profileId], it[Anchors.x], it[Anchors.y], it[Anchors.name])
+                    AnchorData(
+                        it[Anchors.id].value,
+                        it[Anchors.profileId],
+                        it[Anchors.x],
+                        it[Anchors.y],
+                        it[Anchors.name]
+                    )
                 }
         }
 
@@ -87,7 +99,15 @@ object AnchorManager {
             Anchors
                 .selectAll()
                 .where { Anchors.profileId eq profileId }
-                .map { AnchorData(it[Anchors.id].value, it[Anchors.profileId], it[Anchors.x], it[Anchors.y], it[Anchors.name]) }
+                .map {
+                    AnchorData(
+                        it[Anchors.id].value,
+                        it[Anchors.profileId],
+                        it[Anchors.x],
+                        it[Anchors.y],
+                        it[Anchors.name]
+                    )
+                }
         }
 
     fun rename(id: Int, newName: String) =

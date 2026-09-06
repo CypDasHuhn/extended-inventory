@@ -46,13 +46,13 @@ internal val IIC.isIdle: Boolean
 internal val IIC.isGroupMode: Boolean
     get() = mode in GROUP_SELECT_MODES
 
-private val GROUP_SELECT_MODES = setOf(
-    InterfaceMode.GROUP_DELETE_A,
-    InterfaceMode.GROUP_DELETE_B,
-    InterfaceMode.GROUP_MOVE_A,
-    InterfaceMode.GROUP_MOVE_B,
-    InterfaceMode.GROUP_MOVE_TARGET,
-)
+private val GROUP_SELECT_MODES =
+    setOf(
+        InterfaceMode.GROUP_DELETE_A,
+        InterfaceMode.GROUP_DELETE_B,
+        InterfaceMode.GROUP_MOVE_A,
+        InterfaceMode.GROUP_MOVE_B,
+        InterfaceMode.GROUP_MOVE_TARGET,
+    )
 
-internal fun inventoryItem(): InterfaceItem<IIC> =
-    InterfaceItem(IIC::class)
+internal fun inventoryItem(): InterfaceItem<IIC> = InterfaceItem(IIC::class)
