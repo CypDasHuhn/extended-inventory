@@ -156,7 +156,7 @@ object ProfileDetailInterface : ScrollInterface<ProfileDetailContext, ProfileEnt
                 .displayAs(createItem(Material.ENDER_PEARL, mm("<green>Switch To"), listOf(mm("<gray>Make this your active profile."))))
                 .onClick {
                     ProfileActions.switchProfile(click.player, context.profileId)
-                    HotbarManager.getState(click.player).profileId = context.profileId
+                    HotbarManager.switchProfile(click.player, context.profileId)
                     HotbarManager.mirrorToHotbar(click.player)
                     InventoryInterface.openInventory(click.player, InventoryInterfaceContext(context.profileId))
                 },

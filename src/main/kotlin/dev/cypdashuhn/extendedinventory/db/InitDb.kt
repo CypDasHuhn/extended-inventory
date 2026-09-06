@@ -10,5 +10,6 @@ fun RoosterModuleBuilder.initDb() {
         ItemManager.Items,
         AnchorManager.Anchors,
         PlayerProfileManager.PlayerProfiles,
+        PlayerStateStore.PlayerStates,
     ))
 }

@@ -6,6 +6,7 @@ import dev.cypdashuhn.extendedinventory.db.InventoryManager
 import dev.cypdashuhn.extendedinventory.db.ItemManager
 import dev.cypdashuhn.extendedinventory.db.PlayerProfileManager
 import dev.cypdashuhn.extendedinventory.db.PlayerProfileStatus
+import dev.cypdashuhn.extendedinventory.db.PlayerStateStore
 import dev.cypdashuhn.extendedinventory.db.ProfileManager
 import dev.cypdashuhn.extendedinventory.db.SlotCache
 import net.kyori.adventure.text.Component
@@ -37,22 +38,39 @@ object HotbarManager {
     private val ANCHOR_Y_KEY = NamespacedKey("extendedinventory", "anchor_y")
     private val ANCHOR_NAME_KEY = NamespacedKey("extendedinventory", "anchor_name")
 
-    fun getState(player: Player): PlayerState = states.getOrPut(player.uniqueId.toString()) { PlayerState() }
+    fun getState(player: Player): PlayerState =
+        states.getOrPut(player.uniqueId.toString()) {
+            PlayerStateStore.load(player.uniqueId.toString()) ?: PlayerState()
+        }
 
     fun ensureProfile(player: Player): Int {
         val state = getState(player)
         if (state.profileId != null) return state.profileId!!
 
         val primaryId = PlayerProfileManager.getPrimary(player)
-        if (primaryId != null) {
-            state.profileId = primaryId
-            return primaryId
+        val profileId = if (primaryId != null) {
+            primaryId
+        } else {
+            val profileId = ProfileManager.create("default", player)
+            PlayerProfileManager.assign(player, profileId, PlayerProfileStatus.PRIMARY)
+            profileId
         }
-
-        val profileId = ProfileManager.create("default", player)
-        PlayerProfileManager.assign(player, profileId, PlayerProfileStatus.PRIMARY)
         state.profileId = profileId
+        saveState(player)
         return profileId
+    }
+
+    fun saveState(player: Player) {
+        states[player.uniqueId.toString()]?.let { PlayerStateStore.save(player.uniqueId.toString(), it) }
+    }
+
+    fun switchProfile(player: Player, profileId: Int) {
+        getState(player).profileId = profileId
+        saveState(player)
+    }
+
+    fun saveAll() {
+        states.forEach { (uuid, state) -> PlayerStateStore.save(uuid, state) }
     }
 
     fun mirrorToHotbar(player: Player) {
@@ -117,6 +135,7 @@ object HotbarManager {
         state.x += dx
         state.y += dy
         mirrorToHotbar(player)
+        saveState(player)
     }
 
     fun jumpTo(player: Player, x: Int, y: Int) {
@@ -128,16 +147,26 @@ object HotbarManager {
         state.x = x
         state.y = y
         mirrorToHotbar(player)
+        saveState(player)
     }
 
     fun toggleAnchor(player: Player): Boolean {
         val state = getState(player)
         state.anchored = !state.anchored
+        saveState(player)
         return state.anchored
+    }
+
+    fun setAnchored(player: Player, anchored: Boolean) {
+        val state = getState(player)
+        state.anchored = anchored
+        state.mode = if (anchored) HotbarMode.LOCKED else HotbarMode.FREE
+        saveState(player)
     }
 
     fun setMode(player: Player, mode: HotbarMode) {
         getState(player).mode = mode
+        saveState(player)
     }
 
     fun loadBuffer(player: Player, name: String? = null): Boolean {
@@ -154,6 +183,7 @@ object HotbarManager {
         for (i in 0..8) {
             player.inventory.setItem(i, entry.items.getOrNull(i))
         }
+        saveState(player)
         return true
     }
 

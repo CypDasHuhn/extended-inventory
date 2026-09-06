@@ -3,7 +3,6 @@ package dev.cypdashuhn.extendedinventory.commands
 import dev.cypdashuhn.extendedinventory.actions.AnchorActions
 import dev.cypdashuhn.extendedinventory.actions.CycleActions
 import dev.cypdashuhn.extendedinventory.hotbar.HotbarManager
-import dev.cypdashuhn.extendedinventory.hotbar.HotbarMode
 import dev.cypdashuhn.extendedinventory.util.T
 import dev.cypdashuhn.extendedinventory.util.msg
 import dev.cypdashuhn.extendedinventory.util.positionMsg
@@ -44,15 +43,11 @@ fun ChildrenScope.currentPosition() =
 fun ChildrenScope.mode() =
     literal("mode") {
         literal("anchored").onExecute {
-            val state = HotbarManager.getState(player)
-            state.anchored = true
-            state.mode = HotbarMode.LOCKED
+            HotbarManager.setAnchored(player, true)
             player.msg("${T.green}Mode set to ${T.white}anchored${T.green}. Navigation locked, hotbar items locked.")
         }
         literal("free").onExecute {
-            val state = HotbarManager.getState(player)
-            state.anchored = false
-            state.mode = HotbarMode.FREE
+            HotbarManager.setAnchored(player, false)
             player.msg("${T.green}Mode set to ${T.white}free${T.green}. Navigation and hotbar unlocked.")
         }
     }.onExecute {

@@ -4,6 +4,7 @@ import dev.cypdashuhn.extendedinventory.db.AnchorManager
 import dev.cypdashuhn.extendedinventory.db.InventoryManager
 import dev.cypdashuhn.extendedinventory.db.ItemManager
 import dev.cypdashuhn.extendedinventory.db.PlayerProfileManager
+import dev.cypdashuhn.extendedinventory.db.PlayerStateStore
 import dev.cypdashuhn.extendedinventory.db.ProfileManager
 import dev.cypdashuhn.extendedinventory.db.SlotCache
 import dev.rooster.ui.sql.SqlInterfaceContextProvider
@@ -33,6 +34,7 @@ object TestDatabase {
                 ItemManager.Items,
                 AnchorManager.Anchors,
                 PlayerProfileManager.PlayerProfiles,
+                PlayerStateStore.PlayerStates,
                 SqlInterfaceContextProvider.InterfaceContexts,
             )
         }
@@ -46,6 +48,7 @@ object TestDatabase {
             InventoryManager.InventorySlots.deleteAll()
             ItemManager.Items.deleteAll()
             ProfileManager.Profiles.deleteAll()
+            PlayerStateStore.PlayerStates.deleteAll()
         }
         SlotCache.clearAll()
     }

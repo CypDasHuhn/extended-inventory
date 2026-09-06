@@ -7,6 +7,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.EquipmentSlot
 
 object HotbarListener : Listener {
@@ -21,6 +22,11 @@ object HotbarListener : Listener {
             Runnable { HotbarManager.mirrorToHotbar(event.player) },
             1L
         )
+    }
+
+    @EventHandler
+    fun onQuit(event: PlayerQuitEvent) {
+        HotbarManager.saveState(event.player)
     }
 
     @EventHandler

@@ -57,5 +57,8 @@ class ExtendedInventoryPlugin : JavaPlugin() {
         }
     }
 
-    override fun onDisable() = initRoosterDisable()
+    override fun onDisable() {
+        HotbarManager.saveAll()
+        initRoosterDisable()
+    }
 }

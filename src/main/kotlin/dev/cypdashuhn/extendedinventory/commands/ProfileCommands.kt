@@ -33,12 +33,12 @@ fun ChildrenScope.profiles() =
                     val profile = ProfileManager.findByName(name)
                     if (profile != null) {
                         ProfileActions.switchProfile(player, profile.id.value)
-                        HotbarManager.getState(player).profileId = profile.id.value
+                        HotbarManager.switchProfile(player, profile.id.value)
                         HotbarManager.mirrorToHotbar(player)
                         player.msg("${T.green}Switched to profile '${T.white}$name${T.green}'.")
                     } else {
                         val id = ProfileActions.createProfile(player, name)
-                        HotbarManager.getState(player).profileId = id
+                        HotbarManager.switchProfile(player, id)
                         HotbarManager.mirrorToHotbar(player)
                         player.msg("${T.green}Created and switched to profile '${T.white}$name${T.green}'.")
                     }
