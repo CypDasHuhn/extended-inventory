@@ -1,5 +1,6 @@
 package dev.cypdashuhn.extendedinventory.hotbar
 
+import dev.cypdashuhn.extendedinventory.actions.CycleActions
 import dev.cypdashuhn.extendedinventory.db.AnchorManager
 import dev.cypdashuhn.extendedinventory.db.BufferManager
 import dev.cypdashuhn.extendedinventory.db.InventoryManager
@@ -26,6 +27,9 @@ data class PlayerState(
     var y: Int = 0,
     var anchored: Boolean = false,
     var mode: HotbarMode = HotbarMode.FREE,
+    var cycleMaterial: String? = null,
+    var cycleChain: List<Pair<Int, Int>> = emptyList(),
+    var cycleIndex: Int = 0,
 )
 
 object HotbarManager {
@@ -148,6 +152,30 @@ object HotbarManager {
         state.y = y
         mirrorToHotbar(player)
         saveState(player)
+    }
+
+    fun cycle(player: Player, material: String, direction: Int): Pair<Int, Int>? {
+        val state = getState(player)
+        val profileId = state.profileId ?: return null
+
+        val cells = InventoryManager.allSlotsForMaterial(profileId, material).map { it.x to it.y }
+        if (cells.size < 2) return null
+
+        if (state.cycleMaterial != material || state.cycleChain.isEmpty() || state.cycleIndex !in state.cycleChain.indices) {
+            val heldCell = (state.x + player.inventory.heldItemSlot - CENTER_SLOT) to state.y
+            state.cycleMaterial = material
+            state.cycleChain = CycleActions.buildCycleChain(cells, heldCell)
+            state.cycleIndex = 0
+        }
+
+        val size = state.cycleChain.size
+        state.cycleIndex = ((state.cycleIndex + direction) % size + size) % size
+        val target = state.cycleChain[state.cycleIndex]
+
+        jumpTo(player, target.first, target.second)
+        player.inventory.heldItemSlot = CENTER_SLOT
+        saveState(player)
+        return target
     }
 
     fun toggleAnchor(player: Player): Boolean {
