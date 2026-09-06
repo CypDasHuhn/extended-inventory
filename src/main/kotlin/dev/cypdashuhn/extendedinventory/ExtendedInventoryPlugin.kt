@@ -14,9 +14,6 @@ import dev.rooster.core.initRoosterLoad
 import dev.rooster.db.utility_tables.PlayerManager
 import dev.rooster.localization.provider.YmlLocaleProvider
 import org.bukkit.Bukkit
-import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.Locale
 
@@ -46,10 +43,6 @@ class ExtendedInventoryPlugin : JavaPlugin() {
 
         Bukkit.getPluginManager().registerEvents(ChatInputManager, this)
         Bukkit.getPluginManager().registerEvents(HotbarListener, this)
-        Bukkit.getPluginManager().registerEvents(object : Listener {
-            @EventHandler
-            fun onJoin(event: PlayerJoinEvent) = playerManager.playerLogin(event.player)
-        }, this)
 
         Bukkit.getOnlinePlayers().forEach {
             playerManager.playerLogin(it)

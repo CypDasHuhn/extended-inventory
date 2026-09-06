@@ -13,6 +13,7 @@ import org.bukkit.inventory.EquipmentSlot
 object HotbarListener : Listener {
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
+        ExtendedInventoryPlugin.playerManager.playerLogin(event.player)
         val state = HotbarManager.getState(event.player)
         if (state.profileId == null) {
             HotbarManager.ensureProfile(event.player)
