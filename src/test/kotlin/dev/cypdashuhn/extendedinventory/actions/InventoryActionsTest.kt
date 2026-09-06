@@ -3,12 +3,11 @@ package dev.cypdashuhn.extendedinventory.actions
 import dev.cypdashuhn.extendedinventory.TestDatabase
 import dev.cypdashuhn.extendedinventory.db.InventoryManager
 import dev.cypdashuhn.extendedinventory.db.SlotCache
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 
 class InventoryActionsTest {
-
     private val profileId = 1
 
     @BeforeEach

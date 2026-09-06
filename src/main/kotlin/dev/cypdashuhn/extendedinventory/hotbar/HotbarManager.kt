@@ -37,8 +37,7 @@ object HotbarManager {
     private val ANCHOR_Y_KEY = NamespacedKey("extendedinventory", "anchor_y")
     private val ANCHOR_NAME_KEY = NamespacedKey("extendedinventory", "anchor_name")
 
-    fun getState(player: Player): PlayerState =
-        states.getOrPut(player.uniqueId.toString()) { PlayerState() }
+    fun getState(player: Player): PlayerState = states.getOrPut(player.uniqueId.toString()) { PlayerState() }
 
     fun ensureProfile(player: Player): Int {
         val state = getState(player)
@@ -86,7 +85,8 @@ object HotbarManager {
         val item = ItemStack(Material.ENDER_PEARL)
         val meta = item.itemMeta
         meta.displayName(
-            Component.text("Anchor: ", NamedTextColor.AQUA)
+            Component
+                .text("Anchor: ", NamedTextColor.AQUA)
                 .append(Component.text(name, NamedTextColor.WHITE))
                 .append(Component.text(" (", NamedTextColor.GRAY))
                 .append(Component.text("$x, $y", NamedTextColor.WHITE))

@@ -22,50 +22,63 @@ object ProfileManager {
         val openness = enumerationByName<ProfileOpenness>("openness", 16).default(ProfileOpenness.PRIVATE)
     }
 
-    class ProfileEntry(id: EntityID<Int>) : IntEntity(id) {
+    class ProfileEntry(
+        id: EntityID<Int>
+    ) : IntEntity(id) {
         companion object : IntEntityClass<ProfileEntry>(Profiles)
+
         val name by Profiles.name
         val createdByPlayerId by Profiles.createdByPlayerId
         val openness by Profiles.openness
     }
 
-    fun create(name: String, player: Player): Int = transaction {
-        Profiles.insert {
-            it[Profiles.name] = name
-            it[createdByPlayerId] = playerId(player)
-        }[Profiles.id].value
-    }
+    fun create(name: String, player: Player): Int =
+        transaction {
+            Profiles
+                .insert {
+                    it[Profiles.name] = name
+                    it[createdByPlayerId] = playerId(player)
+                }[Profiles.id]
+                .value
+        }
 
-    fun findById(id: Int): ProfileEntry? = transaction {
-        ProfileEntry.findById(id)
-    }
+    fun findById(id: Int): ProfileEntry? =
+        transaction {
+            ProfileEntry.findById(id)
+        }
 
-    fun findByName(name: String): ProfileEntry? = transaction {
-        ProfileEntry.find { Profiles.name eq name }.firstOrNull()
-    }
+    fun findByName(name: String): ProfileEntry? =
+        transaction {
+            ProfileEntry.find { Profiles.name eq name }.firstOrNull()
+        }
 
-    fun all(): List<ProfileEntry> = transaction {
-        ProfileEntry.all().toList()
-    }
+    fun all(): List<ProfileEntry> =
+        transaction {
+            ProfileEntry.all().toList()
+        }
 
-    fun allAccessible(player: Player): List<ProfileEntry> = transaction {
-        val pid = playerId(player)
-        val accessibleIds = PlayerProfileManager.playerProfileIds(pid)
-        ProfileEntry.find { Profiles.id inList accessibleIds }.toList()
-    }
+    fun allAccessible(player: Player): List<ProfileEntry> =
+        transaction {
+            val pid = playerId(player)
+            val accessibleIds = PlayerProfileManager.playerProfileIds(pid)
+            ProfileEntry.find { Profiles.id inList accessibleIds }.toList()
+        }
 
-    fun rename(id: Int, newName: String) = transaction {
-        Profiles.update({ Profiles.id eq id }) { it[name] = newName }
-    }
+    fun rename(id: Int, newName: String) =
+        transaction {
+            Profiles.update({ Profiles.id eq id }) { it[name] = newName }
+        }
 
-    fun setOpenness(id: Int, openness: ProfileOpenness) = transaction {
-        Profiles.update({ Profiles.id eq id }) { it[Profiles.openness] = openness }
-    }
+    fun setOpenness(id: Int, openness: ProfileOpenness) =
+        transaction {
+            Profiles.update({ Profiles.id eq id }) { it[Profiles.openness] = openness }
+        }
 
-    fun delete(id: Int) = transaction {
-        InventoryManager.deleteAllForProfile(id)
-        AnchorManager.deleteAllForProfile(id)
-        PlayerProfileManager.deleteAllForProfile(id)
-        ProfileEntry.findById(id)?.delete()
-    }
+    fun delete(id: Int) =
+        transaction {
+            InventoryManager.deleteAllForProfile(id)
+            AnchorManager.deleteAllForProfile(id)
+            PlayerProfileManager.deleteAllForProfile(id)
+            ProfileEntry.findById(id)?.delete()
+        }
 }

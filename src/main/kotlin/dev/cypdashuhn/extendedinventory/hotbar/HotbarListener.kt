@@ -10,7 +10,6 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.EquipmentSlot
 
 object HotbarListener : Listener {
-
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
         val state = HotbarManager.getState(event.player)

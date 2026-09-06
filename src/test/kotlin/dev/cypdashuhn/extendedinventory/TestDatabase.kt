@@ -50,14 +50,21 @@ object TestDatabase {
         SlotCache.clearAll()
     }
 
-    fun insertRawItem(material: String = "STONE"): Int = transaction {
-        ItemManager.Items.insert {
-            it[serializedItem] = "raw:$material:${System.nanoTime()}"
-            it[materialName] = material
-        }[ItemManager.Items.id].value
-    }
+    fun insertRawItem(material: String = "STONE"): Int =
+        transaction {
+            ItemManager.Items
+                .insert {
+                    it[serializedItem] = "raw:$material:${System.nanoTime()}"
+                    it[materialName] = material
+                }[ItemManager.Items.id]
+                .value
+        }
 
-    fun itemExists(itemId: Int): Boolean = transaction {
-        ItemManager.Items.selectAll().where { ItemManager.Items.id eq itemId }.count() > 0
-    }
+    fun itemExists(itemId: Int): Boolean =
+        transaction {
+            ItemManager.Items
+                .selectAll()
+                .where { ItemManager.Items.id eq itemId }
+                .count() > 0
+        }
 }

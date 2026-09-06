@@ -1,8 +1,8 @@
 package dev.cypdashuhn.extendedinventory.ui.inventory
 
 import com.google.gson.Gson
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 /**
  * The SqlInterfaceContextProvider persists the interface context as Gson JSON on
@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions.*
  * ItemStack values, no Pair map keys), otherwise they are corrupted on reload.
  */
 class InventoryInterfaceContextSerializationTest {
-
     private val gson = Gson()
 
     private fun roundTrip(context: InventoryInterfaceContext): InventoryInterfaceContext {

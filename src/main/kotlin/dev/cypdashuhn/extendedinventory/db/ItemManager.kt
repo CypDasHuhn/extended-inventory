@@ -19,8 +19,11 @@ object ItemManager {
         val materialName = varchar("material_name", 128)
     }
 
-    class ItemEntry(id: EntityID<Int>) : IntEntity(id) {
+    class ItemEntry(
+        id: EntityID<Int>
+    ) : IntEntity(id) {
         companion object : IntEntityClass<ItemEntry>(Items)
+
         val serializedItem by Items.serializedItem
         val materialName by Items.materialName
     }
@@ -30,33 +33,46 @@ object ItemManager {
         val material = itemStack.type.name
 
         return transaction {
-            val existing = Items.selectAll().where {
-                Items.serializedItem eq serialized
-            }.firstOrNull()
+            val existing = Items
+                .selectAll()
+                .where {
+                    Items.serializedItem eq serialized
+                }.firstOrNull()
             if (existing != null) {
                 existing[Items.id].value
             } else {
-                Items.insert {
-                    it[serializedItem] = serialized
-                    it[materialName] = material
-                }[Items.id].value
+                Items
+                    .insert {
+                        it[serializedItem] = serialized
+                        it[materialName] = material
+                    }[Items.id]
+                    .value
             }
         }
     }
 
-    fun getItem(itemId: Int): ItemStack? = transaction {
-        val row = Items.selectAll().where { Items.id eq itemId }.firstOrNull() ?: return@transaction null
-        ItemStack.deserializeBytes(decode(row[Items.serializedItem]))
-    }
+    fun getItem(itemId: Int): ItemStack? =
+        transaction {
+            val row = Items.selectAll().where { Items.id eq itemId }.firstOrNull() ?: return@transaction null
+            ItemStack.deserializeBytes(decode(row[Items.serializedItem]))
+        }
 
-    fun getMaterialName(itemId: Int): String? = transaction {
-        Items.selectAll().where { Items.id eq itemId }.firstOrNull()?.get(Items.materialName)
-    }
+    fun getMaterialName(itemId: Int): String? =
+        transaction {
+            Items
+                .selectAll()
+                .where { Items.id eq itemId }
+                .firstOrNull()
+                ?.get(Items.materialName)
+        }
 
-    fun findByMaterial(materialName: String): List<Int> = transaction {
-        Items.selectAll().where { Items.materialName eq materialName }
-            .map { it[Items.id].value }
-    }
+    fun findByMaterial(materialName: String): List<Int> =
+        transaction {
+            Items
+                .selectAll()
+                .where { Items.materialName eq materialName }
+                .map { it[Items.id].value }
+        }
 
     fun updateItem(itemId: Int, itemStack: ItemStack) {
         val serialized = encode(itemStack.serializeAsBytes())
@@ -70,7 +86,8 @@ object ItemManager {
 
     fun deleteIfUnused(itemId: Int) {
         transaction {
-            val used = InventoryManager.InventorySlots.selectAll()
+            val used = InventoryManager.InventorySlots
+                .selectAll()
                 .where { InventoryManager.InventorySlots.itemId eq itemId }
                 .count() > 0
             if (!used) {

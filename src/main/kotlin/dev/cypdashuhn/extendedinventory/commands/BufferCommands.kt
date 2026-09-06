@@ -7,18 +7,22 @@ import dev.cypdashuhn.extendedinventory.util.msg
 import dev.rooster.commands.*
 import dev.rooster.commands.types.*
 
-fun <T : CanSuggest> T.suggestBufferNames(): T = suggestStrings {
-    val player = playerOrNull ?: return@suggestStrings emptyList()
-    BufferManager.list(player).map { BufferManager.formatTimestamp(it.timestamp) }
-}
-
-fun ChildrenScope.buffer() = literal("buffer") {
-    literal("load") {
-        string("name").suggestBufferNames().optional()
-            .onMissing { loadBuffer(player, null) }
-            .onExecute { loadBuffer(player, arg<String>("name")) }
+fun <T : CanSuggest> T.suggestBufferNames(): T =
+    suggestStrings {
+        val player = playerOrNull ?: return@suggestStrings emptyList()
+        BufferManager.list(player).map { BufferManager.formatTimestamp(it.timestamp) }
     }
-}
+
+fun ChildrenScope.buffer() =
+    literal("buffer") {
+        literal("load") {
+            string("name")
+                .suggestBufferNames()
+                .optional()
+                .onMissing { loadBuffer(player, null) }
+                .onExecute { loadBuffer(player, arg<String>("name")) }
+        }
+    }
 
 private fun loadBuffer(player: org.bukkit.entity.Player, name: String?) {
     val success = HotbarManager.loadBuffer(player, name)

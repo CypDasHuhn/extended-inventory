@@ -20,8 +20,11 @@ object AnchorManager {
         val name = varchar("name", 64)
     }
 
-    class AnchorEntry(id: EntityID<Int>) : IntEntity(id) {
+    class AnchorEntry(
+        id: EntityID<Int>
+    ) : IntEntity(id) {
         companion object : IntEntityClass<AnchorEntry>(Anchors)
+
         val profileId by Anchors.profileId
         val x by Anchors.x
         val y by Anchors.y
@@ -36,60 +39,79 @@ object AnchorManager {
         val name: String,
     )
 
-    fun create(profileId: Int, name: String, x: Int, y: Int): Int = transaction {
-        Anchors.insert {
-            it[Anchors.profileId] = profileId
-            it[Anchors.x] = x
-            it[Anchors.y] = y
-            it[Anchors.name] = name
-        }[Anchors.id].value
-    }
-
-    fun findById(id: Int): AnchorData? = transaction {
-        AnchorEntry.findById(id)?.let {
-            AnchorData(it.id.value, it.profileId, it.x, it.y, it.name)
+    fun create(profileId: Int, name: String, x: Int, y: Int): Int =
+        transaction {
+            Anchors
+                .insert {
+                    it[Anchors.profileId] = profileId
+                    it[Anchors.x] = x
+                    it[Anchors.y] = y
+                    it[Anchors.name] = name
+                }[Anchors.id]
+                .value
         }
-    }
 
-    fun findByName(profileId: Int, name: String): AnchorData? = transaction {
-        Anchors.selectAll().where {
-            (Anchors.profileId eq profileId) and (Anchors.name eq name)
-        }.firstOrNull()?.let {
-            AnchorData(it[Anchors.id].value, it[Anchors.profileId], it[Anchors.x], it[Anchors.y], it[Anchors.name])
+    fun findById(id: Int): AnchorData? =
+        transaction {
+            AnchorEntry.findById(id)?.let {
+                AnchorData(it.id.value, it.profileId, it.x, it.y, it.name)
+            }
         }
-    }
 
-    fun findAtPosition(profileId: Int, x: Int, y: Int): AnchorData? = transaction {
-        Anchors.selectAll().where {
-            (Anchors.profileId eq profileId) and (Anchors.x eq x) and (Anchors.y eq y)
-        }.firstOrNull()?.let {
-            AnchorData(it[Anchors.id].value, it[Anchors.profileId], it[Anchors.x], it[Anchors.y], it[Anchors.name])
+    fun findByName(profileId: Int, name: String): AnchorData? =
+        transaction {
+            Anchors
+                .selectAll()
+                .where {
+                    (Anchors.profileId eq profileId) and (Anchors.name eq name)
+                }.firstOrNull()
+                ?.let {
+                    AnchorData(it[Anchors.id].value, it[Anchors.profileId], it[Anchors.x], it[Anchors.y], it[Anchors.name])
+                }
         }
-    }
 
-    fun allForProfile(profileId: Int): List<AnchorData> = transaction {
-        Anchors.selectAll().where { Anchors.profileId eq profileId }
-            .map { AnchorData(it[Anchors.id].value, it[Anchors.profileId], it[Anchors.x], it[Anchors.y], it[Anchors.name]) }
-    }
+    fun findAtPosition(profileId: Int, x: Int, y: Int): AnchorData? =
+        transaction {
+            Anchors
+                .selectAll()
+                .where {
+                    (Anchors.profileId eq profileId) and (Anchors.x eq x) and (Anchors.y eq y)
+                }.firstOrNull()
+                ?.let {
+                    AnchorData(it[Anchors.id].value, it[Anchors.profileId], it[Anchors.x], it[Anchors.y], it[Anchors.name])
+                }
+        }
 
-    fun rename(id: Int, newName: String) = transaction {
-        Anchors.update({ Anchors.id eq id }) { it[name] = newName }
-    }
+    fun allForProfile(profileId: Int): List<AnchorData> =
+        transaction {
+            Anchors
+                .selectAll()
+                .where { Anchors.profileId eq profileId }
+                .map { AnchorData(it[Anchors.id].value, it[Anchors.profileId], it[Anchors.x], it[Anchors.y], it[Anchors.name]) }
+        }
 
-    fun delete(id: Int) = transaction {
-        val anchor = AnchorEntry.findById(id) ?: return@transaction
-        InventorySlotsRemoveAnchorRefs(anchor.profileId, id)
-        anchor.delete()
-    }
+    fun rename(id: Int, newName: String) =
+        transaction {
+            Anchors.update({ Anchors.id eq id }) { it[name] = newName }
+        }
 
-    private fun InventorySlotsRemoveAnchorRefs(profileId: Int, anchorId: Int) = transaction {
-        InventoryManager.InventorySlots.update({
-            (InventoryManager.InventorySlots.profileId eq profileId) and
-                (InventoryManager.InventorySlots.anchorId eq anchorId)
-        }) { it[InventoryManager.InventorySlots.anchorId] = null }
-    }
+    fun delete(id: Int) =
+        transaction {
+            val anchor = AnchorEntry.findById(id) ?: return@transaction
+            InventorySlotsRemoveAnchorRefs(anchor.profileId, id)
+            anchor.delete()
+        }
 
-    fun deleteAllForProfile(profileId: Int) = transaction {
-        Anchors.deleteWhere { Anchors.profileId eq profileId }
-    }
+    private fun InventorySlotsRemoveAnchorRefs(profileId: Int, anchorId: Int) =
+        transaction {
+            InventoryManager.InventorySlots.update({
+                (InventoryManager.InventorySlots.profileId eq profileId) and
+                    (InventoryManager.InventorySlots.anchorId eq anchorId)
+            }) { it[InventoryManager.InventorySlots.anchorId] = null }
+        }
+
+    fun deleteAllForProfile(profileId: Int) =
+        transaction {
+            Anchors.deleteWhere { Anchors.profileId eq profileId }
+        }
 }

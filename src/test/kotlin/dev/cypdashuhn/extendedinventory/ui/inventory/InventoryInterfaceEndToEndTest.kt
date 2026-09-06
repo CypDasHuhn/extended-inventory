@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test
  * serialization issues are surfaced too.
  */
 abstract class InventoryInterfaceEndToEndTest : UiHarness() {
-
     @Test
     fun `full edit save scroll lifecycle`() {
         // ── Step 1: open ────────────────────────────────────────────────
@@ -227,18 +226,22 @@ object InventoryManagerSeed {
     fun seed(profileId: Int, x: Int, y: Int, material: Material) {
         dev.cypdashuhn.extendedinventory.db.InventoryManager.setItem(
             profileId, x, y,
-            dev.cypdashuhn.extendedinventory.db.ItemManager.store(ItemStack(material)),
+            dev.cypdashuhn.extendedinventory.db.ItemManager
+                .store(ItemStack(material)),
         )
-        dev.cypdashuhn.extendedinventory.db.SlotCache.invalidateProfile(profileId)
+        dev.cypdashuhn.extendedinventory.db.SlotCache
+            .invalidateProfile(profileId)
     }
 }
 
 class InventoryInterfaceEndToEndSqlTest : InventoryInterfaceEndToEndTest() {
     override fun provider() = SqlInterfaceContextProvider()
+
     override fun traceFileName() = "e2e-sql"
 }
 
 class InventoryInterfaceEndToEndInMemoryTest : InventoryInterfaceEndToEndTest() {
     override fun provider() = InMemoryInterfaceContextProvider()
+
     override fun traceFileName() = "e2e-inmemory"
 }

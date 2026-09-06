@@ -47,9 +47,7 @@ object BufferManager {
         return buffers[key]?.toList() ?: emptyList()
     }
 
-    fun loadByName(player: Player, name: String): BufferEntry? {
-        return list(player).firstOrNull { formatTimestamp(it.timestamp) == name }
-    }
+    fun loadByName(player: Player, name: String): BufferEntry? = list(player).firstOrNull { formatTimestamp(it.timestamp) == name }
 
     fun formatTimestamp(timestamp: Long): String {
         val sdf = java.text.SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", java.util.Locale.ENGLISH)

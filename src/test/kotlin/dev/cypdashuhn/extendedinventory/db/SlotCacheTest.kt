@@ -1,10 +1,9 @@
 package dev.cypdashuhn.extendedinventory.db
 
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 class SlotCacheTest {
-
     @Test
     fun `getRow returns empty map for unpopulated row`() {
         val row = SlotCache.getRow(Int.MAX_VALUE, 0)

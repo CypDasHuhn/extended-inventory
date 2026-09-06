@@ -64,7 +64,9 @@ object InventoryActions {
             val newY = targetY + dy
             if (slot.itemId != null) {
                 Triple(newX, newY, slot.itemId)
-            } else null
+            } else {
+                null
+            }
         }
 
         if (moveEntries.isEmpty()) return false
@@ -74,9 +76,9 @@ object InventoryActions {
         return true
     }
 
-    fun getRegionSlots(profileId: Int, x1: Int, y1: Int, x2: Int, y2: Int): List<InventoryManager.SlotData> {
-        return InventoryManager.getRegion(profileId, x1, y1, x2, y2)
-    }
+    fun getRegionSlots(profileId: Int, x1: Int, y1: Int, x2: Int, y2: Int): List<InventoryManager.SlotData> =
+        InventoryManager
+            .getRegion(profileId, x1, y1, x2, y2)
 }
 
 object ProfileActions {
@@ -114,8 +116,7 @@ object ProfileActions {
 }
 
 object AnchorActions {
-    fun addAnchor(profileId: Int, name: String, x: Int, y: Int): Int =
-        AnchorManager.create(profileId, name, x, y)
+    fun addAnchor(profileId: Int, name: String, x: Int, y: Int): Int = AnchorManager.create(profileId, name, x, y)
 
     fun deleteAnchor(player: Player, profileId: Int, name: String): Boolean {
         val status = PlayerProfileManager.getStatus(player, profileId)
@@ -133,8 +134,7 @@ object AnchorActions {
         return true
     }
 
-    fun getAnchorInfo(profileId: Int, name: String): AnchorManager.AnchorData? =
-        AnchorManager.findByName(profileId, name)
+    fun getAnchorInfo(profileId: Int, name: String): AnchorManager.AnchorData? = AnchorManager.findByName(profileId, name)
 }
 
 object CycleActions {

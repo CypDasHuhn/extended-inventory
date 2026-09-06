@@ -8,10 +8,10 @@ import dev.cypdashuhn.extendedinventory.hotbar.HotbarManager
 import dev.cypdashuhn.extendedinventory.ui.ChatInputManager
 import dev.cypdashuhn.extendedinventory.ui.anchor.AnchorListContext
 import dev.cypdashuhn.extendedinventory.ui.anchor.AnchorListInterface
-import dev.cypdashuhn.extendedinventory.util.mm
-import dev.cypdashuhn.extendedinventory.util.T
-import dev.cypdashuhn.extendedinventory.ui.profile.ProfileInterfaceContext
 import dev.cypdashuhn.extendedinventory.ui.profile.ProfileInterface
+import dev.cypdashuhn.extendedinventory.ui.profile.ProfileInterfaceContext
+import dev.cypdashuhn.extendedinventory.util.T
+import dev.cypdashuhn.extendedinventory.util.mm
 import dev.cypdashuhn.extendedinventory.util.region
 import dev.rooster.core.util.createItem
 import dev.rooster.ui.interfaces.ClickInfo
@@ -28,9 +28,15 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
 enum class InterfaceMode {
-    NORMAL, EDITING, SETTING_ANCHOR, MATERIALIZING_ANCHOR,
-    GROUP_DELETE_A, GROUP_DELETE_B,
-    GROUP_MOVE_A, GROUP_MOVE_B, GROUP_MOVE_TARGET,
+    NORMAL,
+    EDITING,
+    SETTING_ANCHOR,
+    MATERIALIZING_ANCHOR,
+    GROUP_DELETE_A,
+    GROUP_DELETE_B,
+    GROUP_MOVE_A,
+    GROUP_MOVE_B,
+    GROUP_MOVE_TARGET,
 }
 
 class InventoryInterfaceContext(
@@ -93,25 +99,24 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         return key.substring(0, i).toInt() to key.substring(i + 1).toInt()
     }
 
-    private fun encodePendingItem(item: ItemStack): String =
-        ItemManager.encode(item.serializeAsBytes())
+    private fun encodePendingItem(item: ItemStack): String = ItemManager.encode(item.serializeAsBytes())
 
     private fun decodePendingItem(encoded: String): ItemStack? =
         if (encoded.isEmpty()) null else ItemStack.deserializeBytes(ItemManager.decode(encoded))
 
-    private fun isGroupPickMode(mode: InterfaceMode): Boolean = mode in setOf(
-        InterfaceMode.GROUP_DELETE_A, InterfaceMode.GROUP_DELETE_B,
-        InterfaceMode.GROUP_MOVE_A, InterfaceMode.GROUP_MOVE_B,
-        InterfaceMode.GROUP_MOVE_TARGET,
-    )
+    private fun isGroupPickMode(mode: InterfaceMode): Boolean =
+        mode in setOf(
+            InterfaceMode.GROUP_DELETE_A, InterfaceMode.GROUP_DELETE_B,
+            InterfaceMode.GROUP_MOVE_A, InterfaceMode.GROUP_MOVE_B,
+            InterfaceMode.GROUP_MOVE_TARGET,
+        )
 
     private fun inGroupMode(ctx: InventoryInterfaceContext): Boolean = isGroupPickMode(ctx.mode)
 
     private fun cornersSet(ctx: InventoryInterfaceContext): Boolean =
         ctx.cornerA != null && ctx.cornerB != null && !isGroupPickMode(ctx.mode)
 
-    private fun targetSet(ctx: InventoryInterfaceContext): Boolean =
-        cornersSet(ctx) && ctx.targetCorner != null
+    private fun targetSet(ctx: InventoryInterfaceContext): Boolean = cornersSet(ctx) && ctx.targetCorner != null
 
     override fun contentProvider(id: Int, context: InventoryInterfaceContext): GridSlotData? {
         val (gridX, gridY) = slotToGrid(context, id)
@@ -140,21 +145,26 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         return GridSlotData(gridX, gridY, null)
     }
 
-    override fun contentDisplay(data: GridSlotData, context: InventoryInterfaceContext): InterfaceInfo<InventoryInterfaceContext>.() -> ItemStack = {
-        data.item ?: ItemStack(Material.AIR)
-    }
-
-    override fun contentClick(data: GridSlotData, context: InventoryInterfaceContext): ClickInfo<InventoryInterfaceContext>.() -> Unit = {
-        when (context.mode) {
-            InterfaceMode.EDITING -> Unit
-            InterfaceMode.NORMAL -> handleNormalClick(data, context)
-            InterfaceMode.SETTING_ANCHOR -> handleSetAnchorClick(data, context)
-            InterfaceMode.MATERIALIZING_ANCHOR -> handleMaterializeClick(data, context)
-            InterfaceMode.GROUP_DELETE_A, InterfaceMode.GROUP_DELETE_B -> handleDeleteCornerPick(data, context)
-            InterfaceMode.GROUP_MOVE_A, InterfaceMode.GROUP_MOVE_B -> handleMoveCornerPick(data, context)
-            InterfaceMode.GROUP_MOVE_TARGET -> handleMoveTargetPick(data, context)
+    override fun contentDisplay(
+        data: GridSlotData,
+        context: InventoryInterfaceContext
+    ): InterfaceInfo<InventoryInterfaceContext>.() -> ItemStack =
+        {
+            data.item ?: ItemStack(Material.AIR)
         }
-    }
+
+    override fun contentClick(data: GridSlotData, context: InventoryInterfaceContext): ClickInfo<InventoryInterfaceContext>.() -> Unit =
+        {
+            when (context.mode) {
+                InterfaceMode.EDITING -> Unit
+                InterfaceMode.NORMAL -> handleNormalClick(data, context)
+                InterfaceMode.SETTING_ANCHOR -> handleSetAnchorClick(data, context)
+                InterfaceMode.MATERIALIZING_ANCHOR -> handleMaterializeClick(data, context)
+                InterfaceMode.GROUP_DELETE_A, InterfaceMode.GROUP_DELETE_B -> handleDeleteCornerPick(data, context)
+                InterfaceMode.GROUP_MOVE_A, InterfaceMode.GROUP_MOVE_B -> handleMoveCornerPick(data, context)
+                InterfaceMode.GROUP_MOVE_TARGET -> handleMoveTargetPick(data, context)
+            }
+        }
 
     private fun ClickInfo<InventoryInterfaceContext>.handleNormalClick(data: GridSlotData, context: InventoryInterfaceContext) {
         if (data.isAnchor && data.anchorName != null) {
@@ -229,246 +239,263 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         return (r.minX..r.maxX).flatMap { sx -> (r.minY..r.maxY).map { sy -> t.first + (sx - r.minX) to t.second + (sy - r.minY) } }.toSet()
     }
 
-    override fun getInterfaceItems(): List<InterfaceItem<InventoryInterfaceContext>> = listOf(
-        backItem(),
-        groupDeleteItem(),
-        groupMoveItem(),
-        editModeItem(),
-        saveEditsItem(),
-        discardEditsItem(),
-        cancelGroupItem(),
-        setAnchorItem(),
-        materializeAnchorItem(),
-        executeDeleteConfirmItem(),
-        executeDeleteFinalItem(),
-        executeMoveConfirmItem(),
-        executeMoveFinalItem(),
-        anchorListItem(),
-        profileListItem(),
-        scrollerItem(),
-        cornerAItem(),
-        cornerBItem(),
-        targetPreviewItem(),
-    )
+    override fun getInterfaceItems(): List<InterfaceItem<InventoryInterfaceContext>> =
+        listOf(
+            backItem(),
+            groupDeleteItem(),
+            groupMoveItem(),
+            editModeItem(),
+            saveEditsItem(),
+            discardEditsItem(),
+            cancelGroupItem(),
+            setAnchorItem(),
+            materializeAnchorItem(),
+            executeDeleteConfirmItem(),
+            executeDeleteFinalItem(),
+            executeMoveConfirmItem(),
+            executeMoveFinalItem(),
+            anchorListItem(),
+            profileListItem(),
+            scrollerItem(),
+            cornerAItem(),
+            cornerBItem(),
+            targetPreviewItem(),
+        )
 
-    private fun backItem() = item()
-        .atSlot(6, 1)
-        .displayAs(createItem(Material.BARRIER, mm("<red>Back"), listOf(mm("<gray>Close the interface."))))
-        .onClick { click.player.closeInventory() }
+    private fun backItem() =
+        item()
+            .atSlot(6, 1)
+            .displayAs(createItem(Material.BARRIER, mm("<red>Back"), listOf(mm("<gray>Close the interface."))))
+            .onClick { click.player.closeInventory() }
 
-    private fun groupDeleteItem() = item()
-        .atSlot(6, 2)
-        .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) }
-        .displayAs(createItem(Material.LAVA_BUCKET, mm("<red>Group Delete"), listOf(
-            mm("<gray>Select two corners to delete"),
-            mm("<gray>all items in the region."),
-        )))
-        .onClick {
-            clearGroup(context)
-            context.mode = InterfaceMode.GROUP_DELETE_A
-            InventoryInterface.openInventory(click.player, context)
-        }
-
-    private fun groupMoveItem() = item()
-        .atSlot(6, 3)
-        .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
-        .displayAs(createItem(Material.PISTON, mm("<green>Group Move"), listOf(
-            mm("<gray>Select two corners for source,"),
-            mm("<gray>then a third for target."),
-        )))
-        .onClick {
-            clearGroup(context)
-            context.mode = InterfaceMode.GROUP_MOVE_A
-            InventoryInterface.openInventory(click.player, context)
-        }
-
-    private fun editModeItem() = item()
-        .atSlot(6, 4)
-        .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
-        .displayAs(createItem(Material.BOOK, mm("<white>Edit Mode"), listOf(mm("<gray>Click to edit inventory slots."))))
-        .onClick {
-            context.mode = InterfaceMode.EDITING
-            InventoryInterface.openInventory(click.player, context)
-        }
-
-    private fun saveEditsItem() = item()
-        .atSlot(6, 3)
-        .usedWhen { context.mode == InterfaceMode.EDITING }
-        .displayAs(createItem(Material.WRITABLE_BOOK, mm("<green>Save"), listOf(mm("<gray>Save changes and exit edit mode."))))
-        .onClick {
-            stageFromChest(click.player, context)
-            savePendingChanges(click.player, context)
-            context.mode = InterfaceMode.NORMAL
-            openInventory(click.player, context)
-        }
-
-    private fun discardEditsItem() = item()
-        .atSlot(6, 4)
-        .usedWhen { context.mode == InterfaceMode.EDITING }
-        .displayAs(createItem(Material.BARRIER, mm("<red>Discard"), listOf(mm("<gray>Discard changes and exit edit mode."))))
-        .onClick {
-            context.pendingChanges.clear()
-            context.mode = InterfaceMode.NORMAL
-            InventoryInterface.openInventory(click.player, context)
-        }
-
-    private fun cancelGroupItem() = item()
-        .atSlot(6, 5)
-        .usedWhen { inGroupMode(context) }
-        .displayAs(createItem(Material.BARRIER, mm("<red>Cancel"), listOf(mm("<gray>Exit group mode."))))
-        .onClick {
-            clearGroup(context)
-            context.mode = InterfaceMode.NORMAL
-            InventoryInterface.openInventory(click.player, context)
-        }
-
-    private fun setAnchorItem() = item()
-        .atSlot(6, 5)
-        .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
-        .displayAs(createItem(Material.ENDER_PEARL, mm("<white>Set Anchor"), listOf(mm("<gray>Click a slot to create an anchor."))))
-        .onClick {
-            context.mode = InterfaceMode.SETTING_ANCHOR
-            InventoryInterface.openInventory(click.player, context)
-        }
-
-    private fun materializeAnchorItem() = item()
-        .atSlot(6, 6)
-        .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
-        .displayAs(createItem(Material.ITEM_FRAME, mm("<white>Materialize Anchor"), listOf(mm("<gray>Get a materialized anchor item."))))
-        .onClick {
-            context.mode = InterfaceMode.MATERIALIZING_ANCHOR
-            InventoryInterface.openInventory(click.player, context)
-        }
-
-    private fun executeDeleteConfirmItem() = item()
-        .atSlot(6, 6)
-        .priority(10)
-        .usedWhen { cornersSet(context) && !targetSet(context) && !context.groupDeleteConfirmed }
-        .displayAs(createItem(Material.LAVA_BUCKET, mm("<red><bold>DELETE REGION"), listOf(
-            mm("<gray>Delete all items between corners."),
-            mm("<red>Click again to confirm."),
-        )))
-        .onClick {
-            context.groupDeleteConfirmed = true
-            InventoryInterface.openInventory(click.player, context)
-        }
-
-    private fun executeDeleteFinalItem() = item()
-        .atSlot(6, 6)
-        .priority(11)
-        .usedWhen { cornersSet(context) && !targetSet(context) && context.groupDeleteConfirmed }
-        .displayAs(createItem(Material.LAVA_BUCKET, mm("<red><bold>CONFIRM DELETE"), listOf(
-            mm("<gray>This cannot be undone!"),
-            mm("<red><bold>Click to execute."),
-        )))
-        .onClick {
-            val a = context.cornerA!!
-            val b = context.cornerB!!
-            InventoryActions.groupDelete(context.profileId, a.first, a.second, b.first, b.second)
-            SlotCache.invalidateProfile(context.profileId)
-            clearGroup(context)
-            context.mode = InterfaceMode.NORMAL
-            HotbarManager.mirrorToHotbar(click.player)
-            InventoryInterface.openInventory(click.player, context)
-        }
-
-    private fun executeMoveConfirmItem() = item()
-        .atSlot(6, 6)
-        .priority(10)
-        .usedWhen { targetSet(context) && !context.groupMoveConfirmed }
-        .displayAs(createItem(Material.PISTON, mm("<green><bold>MOVE REGION"), listOf(
-            mm("<gray>Move items to target region."),
-            mm("<green>Click again to confirm."),
-        )))
-        .onClick {
-            context.groupMoveConfirmed = true
-            InventoryInterface.openInventory(click.player, context)
-        }
-
-    private fun executeMoveFinalItem() = item()
-        .atSlot(6, 6)
-        .priority(11)
-        .usedWhen { targetSet(context) && context.groupMoveConfirmed }
-        .displayAs(createItem(Material.PISTON, mm("<green><bold>CONFIRM MOVE"), listOf(
-            mm("<gray>Move items to target."),
-            mm("<green><bold>Click to execute."),
-        )))
-        .onClick {
-            val a = context.cornerA!!
-            val b = context.cornerB!!
-            val t = context.targetCorner!!
-            InventoryActions.groupMove(context.profileId, a.first, a.second, b.first, b.second, t.first, t.second)
-            SlotCache.invalidateProfile(context.profileId)
-            clearGroup(context)
-            context.mode = InterfaceMode.NORMAL
-            HotbarManager.mirrorToHotbar(click.player)
-            InventoryInterface.openInventory(click.player, context)
-        }
-
-    private fun anchorListItem() = item()
-        .atSlot(6, 7)
-        .displayAs(createItem(Material.NAME_TAG, mm("<white>Anchors"), listOf(mm("<gray>View all anchors."))))
-        .routeTo(AnchorListInterface) { AnchorListContext(context.profileId) }
-
-    private fun profileListItem() = item()
-        .atSlot(6, 0)
-        .displayAs(createItem(Material.PLAYER_HEAD, mm("<white>Profiles"), listOf(mm("<gray>Manage profiles."))))
-        .onClick { ProfileInterface.openRefreshed(click.player, ProfileInterfaceContext()) }
-
-    private fun scrollerItem() = item()
-        .atSlot(6, 8)
-        .displayAs(createItem(Material.COMPASS, mm("<white>Scroll"), listOf(
-            mm("<gray>Left-click: scroll down"),
-            mm("<gray>Right-click: scroll up"),
-        )))
-        .onClick {
-            if (context.mode == InterfaceMode.EDITING) {
-                stageFromChest(click.player, context)
+    private fun groupDeleteItem() =
+        item()
+            .atSlot(6, 2)
+            .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) }
+            .displayAs(createItem(Material.LAVA_BUCKET, mm("<red>Group Delete"), listOf(
+                mm("<gray>Select two corners to delete"),
+                mm("<gray>all items in the region."),
+            )))
+            .onClick {
+                clearGroup(context)
+                context.mode = InterfaceMode.GROUP_DELETE_A
+                InventoryInterface.openInventory(click.player, context)
             }
-            val step = if (click.event.click.isShiftClick) 5 else 1
-            val delta = if (click.event.click.isRightClick) -step else step
-            context.position = (context.position + delta).coerceAtLeast(0)
-            openInventory(click.player, context)
-        }
 
-    private fun cornerAItem() = item()
-        .atSlots(contentArea.allValidSlots())
-        .priority(10)
-        .usedWhen {
-            val a = context.cornerA ?: return@usedWhen false
-            val (gx, gy) = slotToGrid(context, slot)
-            gx == a.first && gy == a.second
-        }
-        .displayAs {
-            val a = context.cornerA!!
-            createItem(Material.RED_STAINED_GLASS_PANE, mm("<red>Corner A"), listOf(mm("<gray>(${a.first}, ${a.second})")))
-        }
+    private fun groupMoveItem() =
+        item()
+            .atSlot(6, 3)
+            .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
+            .displayAs(createItem(Material.PISTON, mm("<green>Group Move"), listOf(
+                mm("<gray>Select two corners for source,"),
+                mm("<gray>then a third for target."),
+            )))
+            .onClick {
+                clearGroup(context)
+                context.mode = InterfaceMode.GROUP_MOVE_A
+                InventoryInterface.openInventory(click.player, context)
+            }
 
-    private fun cornerBItem() = item()
-        .atSlots(contentArea.allValidSlots())
-        .priority(10)
-        .usedWhen {
-            val b = context.cornerB ?: return@usedWhen false
-            val (gx, gy) = slotToGrid(context, slot)
-            gx == b.first && gy == b.second
-        }
-        .displayAs {
-            val b = context.cornerB!!
-            createItem(Material.BLUE_STAINED_GLASS_PANE, mm("<blue>Corner B"), listOf(mm("<gray>(${b.first}, ${b.second})")))
-        }
+    private fun editModeItem() =
+        item()
+            .atSlot(6, 4)
+            .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
+            .displayAs(createItem(Material.BOOK, mm("<white>Edit Mode"), listOf(mm("<gray>Click to edit inventory slots."))))
+            .onClick {
+                context.mode = InterfaceMode.EDITING
+                InventoryInterface.openInventory(click.player, context)
+            }
 
-    private fun targetPreviewItem() = item()
-        .atSlots(contentArea.allValidSlots())
-        .priority(9)
-        .usedWhen {
-            if (context.targetPreviewPositions.isEmpty()) return@usedWhen false
-            val (gx, gy) = slotToGrid(context, slot)
-            (gx to gy) in context.targetPreviewPositions
-        }
-        .displayAs {
-            val (gx, gy) = slotToGrid(context, slot)
-            createItem(Material.GREEN_STAINED_GLASS_PANE, mm("<green>Target"), listOf(mm("<gray>($gx, $gy)")))
-        }
+    private fun saveEditsItem() =
+        item()
+            .atSlot(6, 3)
+            .usedWhen { context.mode == InterfaceMode.EDITING }
+            .displayAs(createItem(Material.WRITABLE_BOOK, mm("<green>Save"), listOf(mm("<gray>Save changes and exit edit mode."))))
+            .onClick {
+                stageFromChest(click.player, context)
+                savePendingChanges(click.player, context)
+                context.mode = InterfaceMode.NORMAL
+                openInventory(click.player, context)
+            }
+
+    private fun discardEditsItem() =
+        item()
+            .atSlot(6, 4)
+            .usedWhen { context.mode == InterfaceMode.EDITING }
+            .displayAs(createItem(Material.BARRIER, mm("<red>Discard"), listOf(mm("<gray>Discard changes and exit edit mode."))))
+            .onClick {
+                context.pendingChanges.clear()
+                context.mode = InterfaceMode.NORMAL
+                InventoryInterface.openInventory(click.player, context)
+            }
+
+    private fun cancelGroupItem() =
+        item()
+            .atSlot(6, 5)
+            .usedWhen { inGroupMode(context) }
+            .displayAs(createItem(Material.BARRIER, mm("<red>Cancel"), listOf(mm("<gray>Exit group mode."))))
+            .onClick {
+                clearGroup(context)
+                context.mode = InterfaceMode.NORMAL
+                InventoryInterface.openInventory(click.player, context)
+            }
+
+    private fun setAnchorItem() =
+        item()
+            .atSlot(6, 5)
+            .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
+            .displayAs(createItem(Material.ENDER_PEARL, mm("<white>Set Anchor"), listOf(mm("<gray>Click a slot to create an anchor."))))
+            .onClick {
+                context.mode = InterfaceMode.SETTING_ANCHOR
+                InventoryInterface.openInventory(click.player, context)
+            }
+
+    private fun materializeAnchorItem() =
+        item()
+            .atSlot(6, 6)
+            .usedWhen { context.mode == InterfaceMode.NORMAL && !inGroupMode(context) && !cornersSet(context) && !targetSet(context) }
+            .displayAs(createItem(Material.ITEM_FRAME, mm("<white>Materialize Anchor"), listOf(mm("<gray>Get a materialized anchor item."))))
+            .onClick {
+                context.mode = InterfaceMode.MATERIALIZING_ANCHOR
+                InventoryInterface.openInventory(click.player, context)
+            }
+
+    private fun executeDeleteConfirmItem() =
+        item()
+            .atSlot(6, 6)
+            .priority(10)
+            .usedWhen { cornersSet(context) && !targetSet(context) && !context.groupDeleteConfirmed }
+            .displayAs(createItem(Material.LAVA_BUCKET, mm("<red><bold>DELETE REGION"), listOf(
+                mm("<gray>Delete all items between corners."),
+                mm("<red>Click again to confirm."),
+            )))
+            .onClick {
+                context.groupDeleteConfirmed = true
+                InventoryInterface.openInventory(click.player, context)
+            }
+
+    private fun executeDeleteFinalItem() =
+        item()
+            .atSlot(6, 6)
+            .priority(11)
+            .usedWhen { cornersSet(context) && !targetSet(context) && context.groupDeleteConfirmed }
+            .displayAs(createItem(Material.LAVA_BUCKET, mm("<red><bold>CONFIRM DELETE"), listOf(
+                mm("<gray>This cannot be undone!"),
+                mm("<red><bold>Click to execute."),
+            )))
+            .onClick {
+                val a = context.cornerA!!
+                val b = context.cornerB!!
+                InventoryActions.groupDelete(context.profileId, a.first, a.second, b.first, b.second)
+                SlotCache.invalidateProfile(context.profileId)
+                clearGroup(context)
+                context.mode = InterfaceMode.NORMAL
+                HotbarManager.mirrorToHotbar(click.player)
+                InventoryInterface.openInventory(click.player, context)
+            }
+
+    private fun executeMoveConfirmItem() =
+        item()
+            .atSlot(6, 6)
+            .priority(10)
+            .usedWhen { targetSet(context) && !context.groupMoveConfirmed }
+            .displayAs(createItem(Material.PISTON, mm("<green><bold>MOVE REGION"), listOf(
+                mm("<gray>Move items to target region."),
+                mm("<green>Click again to confirm."),
+            )))
+            .onClick {
+                context.groupMoveConfirmed = true
+                InventoryInterface.openInventory(click.player, context)
+            }
+
+    private fun executeMoveFinalItem() =
+        item()
+            .atSlot(6, 6)
+            .priority(11)
+            .usedWhen { targetSet(context) && context.groupMoveConfirmed }
+            .displayAs(createItem(Material.PISTON, mm("<green><bold>CONFIRM MOVE"), listOf(
+                mm("<gray>Move items to target."),
+                mm("<green><bold>Click to execute."),
+            )))
+            .onClick {
+                val a = context.cornerA!!
+                val b = context.cornerB!!
+                val t = context.targetCorner!!
+                InventoryActions.groupMove(context.profileId, a.first, a.second, b.first, b.second, t.first, t.second)
+                SlotCache.invalidateProfile(context.profileId)
+                clearGroup(context)
+                context.mode = InterfaceMode.NORMAL
+                HotbarManager.mirrorToHotbar(click.player)
+                InventoryInterface.openInventory(click.player, context)
+            }
+
+    private fun anchorListItem() =
+        item()
+            .atSlot(6, 7)
+            .displayAs(createItem(Material.NAME_TAG, mm("<white>Anchors"), listOf(mm("<gray>View all anchors."))))
+            .routeTo(AnchorListInterface) { AnchorListContext(context.profileId) }
+
+    private fun profileListItem() =
+        item()
+            .atSlot(6, 0)
+            .displayAs(createItem(Material.PLAYER_HEAD, mm("<white>Profiles"), listOf(mm("<gray>Manage profiles."))))
+            .onClick { ProfileInterface.openRefreshed(click.player, ProfileInterfaceContext()) }
+
+    private fun scrollerItem() =
+        item()
+            .atSlot(6, 8)
+            .displayAs(createItem(Material.COMPASS, mm("<white>Scroll"), listOf(
+                mm("<gray>Left-click: scroll down"),
+                mm("<gray>Right-click: scroll up"),
+            )))
+            .onClick {
+                if (context.mode == InterfaceMode.EDITING) {
+                    stageFromChest(click.player, context)
+                }
+                val step = if (click.event.click.isShiftClick) 5 else 1
+                val delta = if (click.event.click.isRightClick) -step else step
+                context.position = (context.position + delta).coerceAtLeast(0)
+                openInventory(click.player, context)
+            }
+
+    private fun cornerAItem() =
+        item()
+            .atSlots(contentArea.allValidSlots())
+            .priority(10)
+            .usedWhen {
+                val a = context.cornerA ?: return@usedWhen false
+                val (gx, gy) = slotToGrid(context, slot)
+                gx == a.first && gy == a.second
+            }.displayAs {
+                val a = context.cornerA!!
+                createItem(Material.RED_STAINED_GLASS_PANE, mm("<red>Corner A"), listOf(mm("<gray>(${a.first}, ${a.second})")))
+            }
+
+    private fun cornerBItem() =
+        item()
+            .atSlots(contentArea.allValidSlots())
+            .priority(10)
+            .usedWhen {
+                val b = context.cornerB ?: return@usedWhen false
+                val (gx, gy) = slotToGrid(context, slot)
+                gx == b.first && gy == b.second
+            }.displayAs {
+                val b = context.cornerB!!
+                createItem(Material.BLUE_STAINED_GLASS_PANE, mm("<blue>Corner B"), listOf(mm("<gray>(${b.first}, ${b.second})")))
+            }
+
+    private fun targetPreviewItem() =
+        item()
+            .atSlots(contentArea.allValidSlots())
+            .priority(9)
+            .usedWhen {
+                if (context.targetPreviewPositions.isEmpty()) return@usedWhen false
+                val (gx, gy) = slotToGrid(context, slot)
+                (gx to gy) in context.targetPreviewPositions
+            }.displayAs {
+                val (gx, gy) = slotToGrid(context, slot)
+                createItem(Material.GREEN_STAINED_GLASS_PANE, mm("<green>Target"), listOf(mm("<gray>($gx, $gy)")))
+            }
 
     private fun clearGroup(ctx: InventoryInterfaceContext) {
         ctx.cornerA = null

@@ -32,9 +32,11 @@ object PlayerProfileManager {
     fun assign(player: Player, profileId: Int, status: PlayerProfileStatus = PlayerProfileStatus.READ_ONLY) {
         val pid = playerId(player)
         transaction {
-            val existing = PlayerProfiles.selectAll().where {
-                (PlayerProfiles.playerId eq pid) and (PlayerProfiles.profileId eq profileId)
-            }.firstOrNull()
+            val existing = PlayerProfiles
+                .selectAll()
+                .where {
+                    (PlayerProfiles.playerId eq pid) and (PlayerProfiles.profileId eq profileId)
+                }.firstOrNull()
             if (existing != null) {
                 PlayerProfiles.update({
                     (PlayerProfiles.playerId eq pid) and (PlayerProfiles.profileId eq profileId)
@@ -66,28 +68,41 @@ object PlayerProfileManager {
     fun getPrimary(player: Player): Int? {
         val pid = playerId(player)
         return transaction {
-            PlayerProfiles.selectAll().where {
-                (PlayerProfiles.playerId eq pid) and (PlayerProfiles.status eq PlayerProfileStatus.PRIMARY)
-            }.firstOrNull()?.get(PlayerProfiles.profileId)
+            PlayerProfiles
+                .selectAll()
+                .where {
+                    (PlayerProfiles.playerId eq pid) and (PlayerProfiles.status eq PlayerProfileStatus.PRIMARY)
+                }.firstOrNull()
+                ?.get(PlayerProfiles.profileId)
         }
     }
 
-    fun getStatus(player: Player, profileId: Int): PlayerProfileStatus? = transaction {
-        val pid = playerId(player)
-        PlayerProfiles.selectAll().where {
-            (PlayerProfiles.playerId eq pid) and (PlayerProfiles.profileId eq profileId)
-        }.firstOrNull()?.get(PlayerProfiles.status)
-    }
+    fun getStatus(player: Player, profileId: Int): PlayerProfileStatus? =
+        transaction {
+            val pid = playerId(player)
+            PlayerProfiles
+                .selectAll()
+                .where {
+                    (PlayerProfiles.playerId eq pid) and (PlayerProfiles.profileId eq profileId)
+                }.firstOrNull()
+                ?.get(PlayerProfiles.status)
+        }
 
-    fun playerProfileIds(playerId: Int): List<Int> = transaction {
-        PlayerProfiles.selectAll().where { PlayerProfiles.playerId eq playerId }
-            .map { it[PlayerProfiles.profileId] }
-    }
+    fun playerProfileIds(playerId: Int): List<Int> =
+        transaction {
+            PlayerProfiles
+                .selectAll()
+                .where { PlayerProfiles.playerId eq playerId }
+                .map { it[PlayerProfiles.profileId] }
+        }
 
-    fun profilePlayers(profileId: Int): List<PlayerProfileRow> = transaction {
-        PlayerProfiles.selectAll().where { PlayerProfiles.profileId eq profileId }
-            .map { PlayerProfileRow(it[PlayerProfiles.playerId], it[PlayerProfiles.profileId], it[PlayerProfiles.status]) }
-    }
+    fun profilePlayers(profileId: Int): List<PlayerProfileRow> =
+        transaction {
+            PlayerProfiles
+                .selectAll()
+                .where { PlayerProfiles.profileId eq profileId }
+                .map { PlayerProfileRow(it[PlayerProfiles.playerId], it[PlayerProfiles.profileId], it[PlayerProfiles.status]) }
+        }
 
     fun remove(player: Player, profileId: Int) {
         val pid = playerId(player)
@@ -98,7 +113,8 @@ object PlayerProfileManager {
         }
     }
 
-    fun deleteAllForProfile(profileId: Int) = transaction {
-        PlayerProfiles.deleteWhere { PlayerProfiles.profileId eq profileId }
-    }
+    fun deleteAllForProfile(profileId: Int) =
+        transaction {
+            PlayerProfiles.deleteWhere { PlayerProfiles.profileId eq profileId }
+        }
 }

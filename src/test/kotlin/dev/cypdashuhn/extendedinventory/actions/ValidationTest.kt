@@ -1,10 +1,9 @@
 package dev.cypdashuhn.extendedinventory.actions
 
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 class ValidationTest {
-
     @Test
     fun `valid names pass`() {
         assertTrue(isValidResourceName("test"))

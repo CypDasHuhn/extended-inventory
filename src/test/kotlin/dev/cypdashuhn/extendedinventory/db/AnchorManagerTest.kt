@@ -1,12 +1,11 @@
 package dev.cypdashuhn.extendedinventory.db
 
 import dev.cypdashuhn.extendedinventory.TestDatabase
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 
 class AnchorManagerTest {
-
     @BeforeEach
     fun setUp() {
         TestDatabase.clear()

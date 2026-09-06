@@ -27,7 +27,6 @@ import java.io.File
  * Concrete subclasses supply the [InterfaceContextProvider] under test.
  */
 abstract class UiHarness {
-
     abstract fun provider(): InterfaceContextProvider
 
     protected abstract fun traceFileName(): String
@@ -116,7 +115,8 @@ abstract class UiHarness {
         sb.appendLine("══════════════════════════════════════════════════════════")
 
         val ctx = context()
-        sb.appendLine("context: profileId=${ctx.profileId} center=(${ctx.centerX}, ${ctx.centerY}) mode=${ctx.mode} position=${ctx.position}")
+        sb
+            .appendLine("context: profileId=${ctx.profileId} center=(${ctx.centerX}, ${ctx.centerY}) mode=${ctx.mode} position=${ctx.position}")
         sb.appendLine("pendingChanges=${ctx.pendingChanges}")
         sb.appendLine("cursor=${cursor()?.type ?: "-"}")
 

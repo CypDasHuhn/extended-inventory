@@ -1,12 +1,11 @@
 package dev.cypdashuhn.extendedinventory.db
 
 import dev.cypdashuhn.extendedinventory.TestPlayers
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class BufferManagerTest {
-
     @Test
     fun `push and pop buffer entry preserves position and item count`() {
         val player = TestPlayers.player()

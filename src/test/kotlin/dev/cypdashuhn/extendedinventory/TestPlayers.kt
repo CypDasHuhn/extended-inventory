@@ -23,16 +23,17 @@ object TestPlayers {
         ) as Player
     }
 
-    private fun defaultFor(type: Class<*>): Any? = when {
-        !type.isPrimitive -> null
-        type == Boolean::class.javaPrimitiveType -> false
-        type == Char::class.javaPrimitiveType -> '\u0000'
-        type == Byte::class.javaPrimitiveType -> 0.toByte()
-        type == Short::class.javaPrimitiveType -> 0.toShort()
-        type == Int::class.javaPrimitiveType -> 0
-        type == Long::class.javaPrimitiveType -> 0L
-        type == Float::class.javaPrimitiveType -> 0f
-        type == Double::class.javaPrimitiveType -> 0.0
-        else -> null
-    }
+    private fun defaultFor(type: Class<*>): Any? =
+        when {
+            !type.isPrimitive -> null
+            type == Boolean::class.javaPrimitiveType -> false
+            type == Char::class.javaPrimitiveType -> '\u0000'
+            type == Byte::class.javaPrimitiveType -> 0.toByte()
+            type == Short::class.javaPrimitiveType -> 0.toShort()
+            type == Int::class.javaPrimitiveType -> 0
+            type == Long::class.javaPrimitiveType -> 0L
+            type == Float::class.javaPrimitiveType -> 0f
+            type == Double::class.javaPrimitiveType -> 0.0
+            else -> null
+        }
 }

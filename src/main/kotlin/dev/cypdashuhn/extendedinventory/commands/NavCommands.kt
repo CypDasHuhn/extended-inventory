@@ -10,75 +10,80 @@ import dev.cypdashuhn.extendedinventory.util.positionMsg
 import dev.rooster.commands.*
 import dev.rooster.commands.types.*
 
-fun ChildrenScope.jumpTo() = literal("jumpto") {
-    integer("x") {
-        integer("y").onExecute {
-            val x = arg<Int>("x")
-            val y = arg<Int>("y")
-            HotbarManager.jumpTo(player, x, y)
-            player.msg("${T.green}Jumped to ($x, $y).")
+fun ChildrenScope.jumpTo() =
+    literal("jumpto") {
+        integer("x") {
+            integer("y").onExecute {
+                val x = arg<Int>("x")
+                val y = arg<Int>("y")
+                HotbarManager.jumpTo(player, x, y)
+                player.msg("${T.green}Jumped to ($x, $y).")
+            }
         }
-    }
-    string("anchorName").suggestAnchorNames().onExecute {
-        val target = arg<String>("anchorName")
-        val profileId = HotbarManager.ensureProfile(player)
-        val anchor = AnchorActions.getAnchorInfo(profileId, target)
-        if (anchor != null) {
-            HotbarManager.jumpTo(player, anchor.x, anchor.y)
-            player.msg("${T.green}Jumped to anchor '${T.white}$target${T.green}' at (${anchor.x}, ${anchor.y}).")
-        } else {
-            player.msg("${T.red}Anchor '${T.white}$target${T.red}' not found.")
+        string("anchorName").suggestAnchorNames().onExecute {
+            val target = arg<String>("anchorName")
+            val profileId = HotbarManager.ensureProfile(player)
+            val anchor = AnchorActions.getAnchorInfo(profileId, target)
+            if (anchor != null) {
+                HotbarManager.jumpTo(player, anchor.x, anchor.y)
+                player.msg("${T.green}Jumped to anchor '${T.white}$target${T.green}' at (${anchor.x}, ${anchor.y}).")
+            } else {
+                player.msg("${T.red}Anchor '${T.white}$target${T.red}' not found.")
+            }
         }
+    }.onExecute {
+        player.msg("${T.yellow}Usage: /ex jumpto <x> <y> or /ex jumpto <anchor-name>")
     }
-}.onExecute {
-    player.msg("${T.yellow}Usage: /ex jumpto <x> <y> or /ex jumpto <anchor-name>")
-}
 
-fun ChildrenScope.currentPosition() = literal("current-position").onExecute {
-    val state = HotbarManager.getState(player)
-    player.msg(positionMsg(state.x, state.y))
-}
-
-fun ChildrenScope.mode() = literal("mode") {
-    literal("anchored").onExecute {
-        val state = HotbarManager.getState(player)
-        state.anchored = true
-        state.mode = HotbarMode.LOCKED
-        player.msg("${T.green}Mode set to ${T.white}anchored${T.green}. Navigation locked, hotbar items locked.")
-    }
-    literal("free").onExecute {
-        val state = HotbarManager.getState(player)
-        state.anchored = false
-        state.mode = HotbarMode.FREE
-        player.msg("${T.green}Mode set to ${T.white}free${T.green}. Navigation and hotbar unlocked.")
-    }
-}.onExecute {
-    val state = HotbarManager.getState(player)
-    player.msg("${T.green}Anchored: ${T.white}${state.anchored}${T.green}, Mode: ${T.white}${state.mode}")
-}
-
-fun ChildrenScope.direction(name: String, dx: Int, dy: Int) = literal(name) {
-    integer("amount", min = 1).optional().onExecute {
-        val amount = argOrNull<Int>("amount") ?: 1
-        repeat(amount) { HotbarManager.navigate(player, dx, dy) }
+fun ChildrenScope.currentPosition() =
+    literal("current-position").onExecute {
         val state = HotbarManager.getState(player)
         player.msg(positionMsg(state.x, state.y))
     }
-}.onExecute {
-    HotbarManager.navigate(player, dx, dy)
-    val state = HotbarManager.getState(player)
-    player.msg(positionMsg(state.x, state.y))
-}
 
-fun ChildrenScope.cycle() = literal("cycle").onExecute {
-    val state = HotbarManager.getState(player)
-    val profileId = state.profileId ?: return@onExecute
-    val positions = CycleActions.getCyclePositions(profileId, state.x, state.y)
-    if (positions.isEmpty()) {
-        player.msg("${T.red}No other positions with this material.")
-        return@onExecute
+fun ChildrenScope.mode() =
+    literal("mode") {
+        literal("anchored").onExecute {
+            val state = HotbarManager.getState(player)
+            state.anchored = true
+            state.mode = HotbarMode.LOCKED
+            player.msg("${T.green}Mode set to ${T.white}anchored${T.green}. Navigation locked, hotbar items locked.")
+        }
+        literal("free").onExecute {
+            val state = HotbarManager.getState(player)
+            state.anchored = false
+            state.mode = HotbarMode.FREE
+            player.msg("${T.green}Mode set to ${T.white}free${T.green}. Navigation and hotbar unlocked.")
+        }
+    }.onExecute {
+        val state = HotbarManager.getState(player)
+        player.msg("${T.green}Anchored: ${T.white}${state.anchored}${T.green}, Mode: ${T.white}${state.mode}")
     }
-    val next = positions.first()
-    HotbarManager.jumpTo(player, next.first, next.second)
-    player.msg("${T.green}Cycled to next position: (${T.white}${next.first}${T.green}, ${T.white}${next.second}${T.green})")
-}
+
+fun ChildrenScope.direction(name: String, dx: Int, dy: Int) =
+    literal(name) {
+        integer("amount", min = 1).optional().onExecute {
+            val amount = argOrNull<Int>("amount") ?: 1
+            repeat(amount) { HotbarManager.navigate(player, dx, dy) }
+            val state = HotbarManager.getState(player)
+            player.msg(positionMsg(state.x, state.y))
+        }
+    }.onExecute {
+        HotbarManager.navigate(player, dx, dy)
+        val state = HotbarManager.getState(player)
+        player.msg(positionMsg(state.x, state.y))
+    }
+
+fun ChildrenScope.cycle() =
+    literal("cycle").onExecute {
+        val state = HotbarManager.getState(player)
+        val profileId = state.profileId ?: return@onExecute
+        val positions = CycleActions.getCyclePositions(profileId, state.x, state.y)
+        if (positions.isEmpty()) {
+            player.msg("${T.red}No other positions with this material.")
+            return@onExecute
+        }
+        val next = positions.first()
+        HotbarManager.jumpTo(player, next.first, next.second)
+        player.msg("${T.green}Cycled to next position: (${T.white}${next.first}${T.green}, ${T.white}${next.second}${T.green})")
+    }

@@ -13,10 +13,8 @@ object T {
     const val bold = "<bold>"
 }
 
-fun positionMsg(x: Int, y: Int) =
-    "${T.green}Position: (${T.white}$x${T.green}, ${T.white}$y${T.green})"
+fun positionMsg(x: Int, y: Int) = "${T.green}Position: (${T.white}$x${T.green}, ${T.white}$y${T.green})"
 
 fun whiteQuoted(s: String) = "${T.white}'$s'${T.green}"
 
-fun errorNotFound(what: String, name: String) =
-    "${T.red}$what '${T.white}$name${T.red}' not found."
+fun errorNotFound(what: String, name: String) = "${T.red}$what '${T.white}$name${T.red}' not found."
