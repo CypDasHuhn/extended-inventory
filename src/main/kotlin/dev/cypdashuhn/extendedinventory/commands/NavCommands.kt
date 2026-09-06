@@ -1,13 +1,13 @@
 package dev.cypdashuhn.extendedinventory.commands
 
 import dev.cypdashuhn.extendedinventory.actions.AnchorActions
-import dev.cypdashuhn.extendedinventory.actions.CycleActions
 import dev.cypdashuhn.extendedinventory.hotbar.HotbarManager
 import dev.cypdashuhn.extendedinventory.util.T
 import dev.cypdashuhn.extendedinventory.util.msg
 import dev.cypdashuhn.extendedinventory.util.positionMsg
 import dev.rooster.commands.*
 import dev.rooster.commands.types.*
+import org.bukkit.entity.Player
 
 fun ChildrenScope.jumpTo() =
     literal("jumpto") {
@@ -70,35 +70,25 @@ fun ChildrenScope.direction(name: String, dx: Int, dy: Int) =
     }
 
 fun ChildrenScope.cycle() =
-    literal("cycle").onExecute {
-        val state = HotbarManager.getState(player)
-        val profileId = state.profileId ?: return@onExecute
+    literal("cycle") {
+        literal("next").onExecute { cycleTo(player, 1) }
+        literal("prev").onExecute { cycleTo(player, -1) }
+    }.onExecute { cycleTo(player, 1) }
 
-        val inventory = player.inventory
-        val held = inventory.itemInMainHand
-        val excludePos: Pair<Int, Int>
-        val materialName: String?
-
-        if (!held.type.isAir) {
-            val heldCellX = state.x + inventory.heldItemSlot - HotbarManager.CENTER_SLOT
-            excludePos = heldCellX to state.y
-            materialName = held.type.name
-        } else {
-            excludePos = state.x to state.y
-            materialName = CycleActions.materialAt(profileId, state.x, state.y)
-        }
-
-        if (materialName == null) {
-            player.msg("${T.red}No material to cycle: hold an item or stand on a stored cell.")
-            return@onExecute
-        }
-
-        val positions = CycleActions.positionsForMaterial(profileId, materialName, excludePos)
-        if (positions.isEmpty()) {
-            player.msg("${T.red}No other positions with this material.")
-            return@onExecute
-        }
-        val next = positions.first()
-        HotbarManager.jumpTo(player, next.first, next.second)
-        player.msg("${T.green}Cycled to next position: (${T.white}${next.first}${T.green}, ${T.white}${next.second}${T.green})")
+private fun cycleTo(player: Player, direction: Int) {
+    val held = player.inventory.itemInMainHand
+    if (held.type.isAir) {
+        player.msg("${T.red}No material to cycle: hold an item.")
+        return
     }
+
+    HotbarManager.ensureProfile(player)
+    val target = HotbarManager.cycle(player, held.type.name, direction)
+    if (target == null) {
+        player.msg("${T.red}No other positions with this material.")
+        return
+    }
+
+    val dir = if (direction >= 0) "next" else "previous"
+    player.msg("${T.green}Cycled to $dir position: (${T.white}${target.first}${T.green}, ${T.white}${target.second}${T.green})")
+}

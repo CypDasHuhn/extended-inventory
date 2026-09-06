@@ -138,26 +138,32 @@ object AnchorActions {
 }
 
 object CycleActions {
-    fun getCyclePositions(profileId: Int, x: Int, y: Int): List<Pair<Int, Int>> {
-        val materialName = materialAt(profileId, x, y) ?: return emptyList()
-        return positionsForMaterial(profileId, materialName, x to y)
+    fun buildCycleChain(cells: List<Pair<Int, Int>>, start: Pair<Int, Int>): List<Pair<Int, Int>> {
+        if (cells.isEmpty()) return emptyList()
+
+        val remaining = cells.toMutableSet()
+        var current = nearest(remaining, start)
+        remaining.remove(current)
+
+        val chain = mutableListOf(current)
+        while (remaining.isNotEmpty()) {
+            current = nearest(remaining, current)
+            remaining.remove(current)
+            chain.add(current)
+        }
+        return chain
     }
 
-    fun materialAt(profileId: Int, x: Int, y: Int): String? {
-        val slot = SlotCache.getSlot(profileId, x, y) ?: return null
-        val itemId = slot.itemId ?: return null
-        return ItemManager.getMaterialName(itemId)
-    }
+    private fun nearest(remaining: Set<Pair<Int, Int>>, from: Pair<Int, Int>): Pair<Int, Int> =
+        remaining.minWithOrNull(
+            compareBy<Pair<Int, Int>> { distanceSq(from, it) }
+                .thenBy { it.first }
+                .thenBy { it.second },
+        ) ?: from
 
-    fun positionsForMaterial(profileId: Int, materialName: String, exclude: Pair<Int, Int>): List<Pair<Int, Int>> {
-        val allSlots = InventoryManager.allSlotsForMaterial(profileId, materialName)
-        return allSlots
-            .filter { it.x != exclude.first || it.y != exclude.second }
-            .map { it.x to it.y }
-            .sortedBy { (sx, sy) ->
-                val dx = sx - exclude.first
-                val dy = sy - exclude.second
-                dx * dx + dy * dy
-            }
+    private fun distanceSq(a: Pair<Int, Int>, b: Pair<Int, Int>): Int {
+        val dx = a.first - b.first
+        val dy = a.second - b.second
+        return dx * dx + dy * dy
     }
 }
