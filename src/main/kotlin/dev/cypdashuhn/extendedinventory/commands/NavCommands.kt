@@ -73,7 +73,27 @@ fun ChildrenScope.cycle() =
     literal("cycle").onExecute {
         val state = HotbarManager.getState(player)
         val profileId = state.profileId ?: return@onExecute
-        val positions = CycleActions.getCyclePositions(profileId, state.x, state.y)
+
+        val inventory = player.inventory
+        val held = inventory.itemInMainHand
+        val excludePos: Pair<Int, Int>
+        val materialName: String?
+
+        if (!held.type.isAir) {
+            val heldCellX = state.x + inventory.heldItemSlot - HotbarManager.CENTER_SLOT
+            excludePos = heldCellX to state.y
+            materialName = held.type.name
+        } else {
+            excludePos = state.x to state.y
+            materialName = CycleActions.materialAt(profileId, state.x, state.y)
+        }
+
+        if (materialName == null) {
+            player.msg("${T.red}No material to cycle: hold an item or stand on a stored cell.")
+            return@onExecute
+        }
+
+        val positions = CycleActions.positionsForMaterial(profileId, materialName, excludePos)
         if (positions.isEmpty()) {
             player.msg("${T.red}No other positions with this material.")
             return@onExecute

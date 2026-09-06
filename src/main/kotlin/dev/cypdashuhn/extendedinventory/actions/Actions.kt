@@ -139,18 +139,24 @@ object AnchorActions {
 
 object CycleActions {
     fun getCyclePositions(profileId: Int, x: Int, y: Int): List<Pair<Int, Int>> {
-        val slot = SlotCache.getSlot(profileId, x, y) ?: return emptyList()
-        val itemId = slot.itemId ?: return emptyList()
-        val materialName = ItemManager.getMaterialName(itemId) ?: return emptyList()
-        val allSlots = InventoryManager.allSlotsForMaterial(profileId, materialName)
+        val materialName = materialAt(profileId, x, y) ?: return emptyList()
+        return positionsForMaterial(profileId, materialName, x to y)
+    }
 
-        val currentPos = x to y
+    fun materialAt(profileId: Int, x: Int, y: Int): String? {
+        val slot = SlotCache.getSlot(profileId, x, y) ?: return null
+        val itemId = slot.itemId ?: return null
+        return ItemManager.getMaterialName(itemId)
+    }
+
+    fun positionsForMaterial(profileId: Int, materialName: String, exclude: Pair<Int, Int>): List<Pair<Int, Int>> {
+        val allSlots = InventoryManager.allSlotsForMaterial(profileId, materialName)
         return allSlots
-            .filter { it.x != x || it.y != y }
+            .filter { it.x != exclude.first || it.y != exclude.second }
             .map { it.x to it.y }
             .sortedBy { (sx, sy) ->
-                val dx = sx - currentPos.first
-                val dy = sy - currentPos.second
+                val dx = sx - exclude.first
+                val dy = sy - exclude.second
                 dx * dx + dy * dy
             }
     }
