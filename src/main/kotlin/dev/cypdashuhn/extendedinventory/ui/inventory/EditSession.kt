@@ -11,7 +11,7 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-internal fun editSessionItems(): List<InterfaceItem<InventoryInterfaceContext>> =
+internal fun editSessionItems(): List<InterfaceItem<IIC>> =
     listOf(
         inventoryItem()
             .atSlot(6, 4)
@@ -54,7 +54,7 @@ internal fun encodePendingItem(item: ItemStack): String = ItemManager.encode(ite
 internal fun decodePendingItem(encoded: String): ItemStack? =
     if (encoded.isEmpty()) null else ItemStack.deserializeBytes(ItemManager.decode(encoded))
 
-internal fun stagePendingEdits(player: Player, ctx: InventoryInterfaceContext) {
+internal fun stagePendingEdits(player: Player, ctx: IIC) {
     val inventory = player.openInventory.topInventory
     for (slot in 0 until BOTTOM_BAR_START) {
         val (gridX, gridY) = ctx.contentSlotToGrid(slot)
@@ -65,7 +65,7 @@ internal fun stagePendingEdits(player: Player, ctx: InventoryInterfaceContext) {
     }
 }
 
-internal fun savePendingEdits(player: Player, context: InventoryInterfaceContext) {
+internal fun savePendingEdits(player: Player, context: IIC) {
     context.pendingChanges.forEach { (key, encoded) ->
         val (x, y) = parsePendingKey(key)
         InventoryActions.setItem(context.profileId, x, y, decodePendingItem(encoded))

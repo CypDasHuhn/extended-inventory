@@ -9,7 +9,7 @@ import dev.rooster.core.util.createItem
 import dev.rooster.ui.items.InterfaceItem
 import org.bukkit.Material
 
-internal fun chromeItems(): List<InterfaceItem<InventoryInterfaceContext>> =
+internal fun chromeItems(): List<InterfaceItem<IIC>> =
     listOf(
         inventoryItem()
             .atSlot(6, 1)

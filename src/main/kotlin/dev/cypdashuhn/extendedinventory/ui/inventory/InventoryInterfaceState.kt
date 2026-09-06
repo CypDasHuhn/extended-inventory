@@ -4,6 +4,8 @@ import dev.rooster.ui.interfaces.constructors.indexed_content.ScrollContext
 import dev.rooster.ui.items.InterfaceItem
 import org.bukkit.inventory.ItemStack
 
+typealias IIC = InventoryInterfaceContext
+
 enum class InterfaceMode {
     NORMAL,
     EDITING,
@@ -38,10 +40,10 @@ data class GridSlotData(
     val anchorName: String? = null,
 )
 
-internal val InventoryInterfaceContext.isIdle: Boolean
+internal val IIC.isIdle: Boolean
     get() = mode == InterfaceMode.NORMAL && cornerA == null && cornerB == null
 
-internal val InventoryInterfaceContext.isGroupMode: Boolean
+internal val IIC.isGroupMode: Boolean
     get() = mode in GROUP_SELECT_MODES
 
 private val GROUP_SELECT_MODES = setOf(
@@ -52,5 +54,5 @@ private val GROUP_SELECT_MODES = setOf(
     InterfaceMode.GROUP_MOVE_TARGET,
 )
 
-internal fun inventoryItem(): InterfaceItem<InventoryInterfaceContext> =
-    InterfaceItem(InventoryInterfaceContext::class)
+internal fun inventoryItem(): InterfaceItem<IIC> =
+    InterfaceItem(IIC::class)

@@ -10,7 +10,7 @@ import dev.rooster.ui.interfaces.ClickInfo
 import dev.rooster.ui.items.InterfaceItem
 import org.bukkit.Material
 
-internal fun anchorActionItems(): List<InterfaceItem<InventoryInterfaceContext>> =
+internal fun anchorActionItems(): List<InterfaceItem<IIC>> =
     listOf(
         inventoryItem()
             .atSlot(6, 5)
@@ -30,7 +30,7 @@ internal fun anchorActionItems(): List<InterfaceItem<InventoryInterfaceContext>>
             },
     )
 
-internal fun ClickInfo<InventoryInterfaceContext>.setAnchorOnContent(data: GridSlotData) {
+internal fun ClickInfo<IIC>.setAnchorOnContent(data: GridSlotData) {
     InventoryInterface.openInventory(click.player, context)
     ChatInputManager.awaitInput(click.player, "<gray>Type the anchor <white>name<gray>:") { name ->
         if (name.isBlank()) return@awaitInput
@@ -42,7 +42,7 @@ internal fun ClickInfo<InventoryInterfaceContext>.setAnchorOnContent(data: GridS
     }
 }
 
-internal fun ClickInfo<InventoryInterfaceContext>.materializeAnchorOnContent(data: GridSlotData) {
+internal fun ClickInfo<IIC>.materializeAnchorOnContent(data: GridSlotData) {
     val anchorItem = HotbarManager.createAnchorItem("anchor_${data.x}_${data.y}", data.x, data.y)
     click.player.inventory.addItem(anchorItem)
     context.mode = InterfaceMode.NORMAL

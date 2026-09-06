@@ -17,9 +17,9 @@ import dev.rooster.ui.items.InterfaceItem
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
-object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotData>(
-    handler { InventoryInterfaceContext(0) },
-    ScrollInterfaceOptions<InventoryInterfaceContext>().apply {
+object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
+    handler { IIC(0) },
+    ScrollInterfaceOptions<IIC>().apply {
         scrollerObject = ScrollerObject.None()
         inventoryTitle = { _, ctx ->
             val suffix = when (ctx.mode) {
@@ -38,11 +38,11 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         sizeFromRows(6)
     },
 ) {
-    override fun contentItem(): InterfaceItem<InventoryInterfaceContext> = super.contentItem().unlockedWhenEditing()
+    override fun contentItem(): InterfaceItem<IIC> = super.contentItem().unlockedWhenEditing()
 
-    override fun clickInAreaItem(): InterfaceItem<InventoryInterfaceContext> = super.clickInAreaItem().unlockedWhenEditing()
+    override fun clickInAreaItem(): InterfaceItem<IIC> = super.clickInAreaItem().unlockedWhenEditing()
 
-    override fun contentProvider(id: Int, context: InventoryInterfaceContext): GridSlotData? {
+    override fun contentProvider(id: Int, context: IIC): GridSlotData? {
         val (gridX, gridY) = context.contentIdToGrid(id)
         val key = pendingKey(gridX, gridY)
 
@@ -69,15 +69,12 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         return GridSlotData(gridX, gridY, null)
     }
 
-    override fun contentDisplay(
-        data: GridSlotData,
-        context: InventoryInterfaceContext
-    ): InterfaceInfo<InventoryInterfaceContext>.() -> ItemStack =
+    override fun contentDisplay(data: GridSlotData, context: IIC): InterfaceInfo<IIC>.() -> ItemStack =
         {
             data.item ?: ItemStack(Material.AIR)
         }
 
-    override fun contentClick(data: GridSlotData, context: InventoryInterfaceContext): ClickInfo<InventoryInterfaceContext>.() -> Unit =
+    override fun contentClick(data: GridSlotData, context: IIC): ClickInfo<IIC>.() -> Unit =
         {
             when (context.mode) {
                 InterfaceMode.EDITING -> Unit
@@ -90,14 +87,14 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
             }
         }
 
-    override fun getInterfaceItems(): List<InterfaceItem<InventoryInterfaceContext>> =
+    override fun getInterfaceItems(): List<InterfaceItem<IIC>> =
         chromeItems() +
             editSessionItems() +
             anchorActionItems() +
             groupOperationItems() +
             groupSelectionOverlayItems()
 
-    private fun ClickInfo<InventoryInterfaceContext>.handleNormalClick(data: GridSlotData) {
+    private fun ClickInfo<IIC>.handleNormalClick(data: GridSlotData) {
         if (data.isAnchor && data.anchorName != null) {
             val anchor = AnchorManager.findByName(context.profileId, data.anchorName)
             if (anchor != null) {
@@ -115,5 +112,4 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
     }
 }
 
-private fun InterfaceItem<InventoryInterfaceContext>.unlockedWhenEditing(): InterfaceItem<InventoryInterfaceContext> =
-    unlockedWhen { context.mode == InterfaceMode.EDITING }
+private fun InterfaceItem<IIC>.unlockedWhenEditing(): InterfaceItem<IIC> = unlockedWhen { context.mode == InterfaceMode.EDITING }

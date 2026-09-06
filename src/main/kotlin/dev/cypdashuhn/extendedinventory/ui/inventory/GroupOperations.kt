@@ -10,7 +10,7 @@ import dev.rooster.ui.interfaces.ClickInfo
 import dev.rooster.ui.items.InterfaceItem
 import org.bukkit.Material
 
-internal fun groupOperationItems(): List<InterfaceItem<InventoryInterfaceContext>> =
+internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
     listOf(
         inventoryItem()
             .atSlot(6, 2)
@@ -108,7 +108,7 @@ internal fun groupOperationItems(): List<InterfaceItem<InventoryInterfaceContext
             },
     )
 
-internal fun groupSelectionOverlayItems(): List<InterfaceItem<InventoryInterfaceContext>> =
+internal fun groupSelectionOverlayItems(): List<InterfaceItem<IIC>> =
     listOf(
         inventoryItem()
             .atSlots(InventoryInterface.contentArea.allValidSlots())
@@ -145,7 +145,7 @@ internal fun groupSelectionOverlayItems(): List<InterfaceItem<InventoryInterface
             },
     )
 
-internal fun InventoryInterfaceContext.clearGroupSelection() {
+internal fun IIC.clearGroupSelection() {
     cornerA = null
     cornerB = null
     targetCorner = null
@@ -154,13 +154,13 @@ internal fun InventoryInterfaceContext.clearGroupSelection() {
     groupMoveConfirmed = false
 }
 
-internal val InventoryInterfaceContext.cornersSet: Boolean
+internal val IIC.cornersSet: Boolean
     get() = cornerA != null && cornerB != null && !isGroupMode
 
-internal val InventoryInterfaceContext.targetSet: Boolean
+internal val IIC.targetSet: Boolean
     get() = cornersSet && targetCorner != null
 
-internal fun InventoryInterfaceContext.computeTargetPreview(): Set<Pair<Int, Int>> {
+internal fun IIC.computeTargetPreview(): Set<Pair<Int, Int>> {
     val a = cornerA ?: return emptySet()
     val b = cornerB ?: return emptySet()
     val t = targetCorner ?: return emptySet()
@@ -168,7 +168,7 @@ internal fun InventoryInterfaceContext.computeTargetPreview(): Set<Pair<Int, Int
     return r.positions.map { (x, y) -> t.first + (x - r.minX) to t.second + (y - r.minY) }.toSet()
 }
 
-internal fun ClickInfo<InventoryInterfaceContext>.pickDeleteCorner(data: GridSlotData) {
+internal fun ClickInfo<IIC>.pickDeleteCorner(data: GridSlotData) {
     if (context.cornerA == null) {
         context.cornerA = data.x to data.y
         context.mode = InterfaceMode.GROUP_DELETE_B
@@ -179,7 +179,7 @@ internal fun ClickInfo<InventoryInterfaceContext>.pickDeleteCorner(data: GridSlo
     InventoryInterface.openInventory(click.player, context)
 }
 
-internal fun ClickInfo<InventoryInterfaceContext>.pickMoveCorner(data: GridSlotData) {
+internal fun ClickInfo<IIC>.pickMoveCorner(data: GridSlotData) {
     if (context.cornerA == null) {
         context.cornerA = data.x to data.y
         context.mode = InterfaceMode.GROUP_MOVE_B
@@ -190,7 +190,7 @@ internal fun ClickInfo<InventoryInterfaceContext>.pickMoveCorner(data: GridSlotD
     InventoryInterface.openInventory(click.player, context)
 }
 
-internal fun ClickInfo<InventoryInterfaceContext>.pickMoveTarget(data: GridSlotData) {
+internal fun ClickInfo<IIC>.pickMoveTarget(data: GridSlotData) {
     context.targetCorner = data.x to data.y
     context.targetPreviewPositions = context.computeTargetPreview()
     context.mode = InterfaceMode.NORMAL
