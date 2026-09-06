@@ -21,8 +21,6 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
     handler { InventoryInterfaceContext(0) },
     ScrollInterfaceOptions<InventoryInterfaceContext>().apply {
         scrollerObject = ScrollerObject.None()
-        modifyContentItem = { interactiveWhen { context.mode == InterfaceMode.EDITING } }
-        modifyClickInArea = { interactiveWhen { context.mode == InterfaceMode.EDITING } }
         inventoryTitle = { _, ctx ->
             val suffix = when (ctx.mode) {
                 InterfaceMode.GROUP_DELETE_A -> " <dark_red>[Delete: pick corner A]"
@@ -40,6 +38,10 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         sizeFromRows(6)
     },
 ) {
+    override fun contentItem(): InterfaceItem<InventoryInterfaceContext> = super.contentItem().unlockedWhenEditing()
+
+    override fun clickInAreaItem(): InterfaceItem<InventoryInterfaceContext> = super.clickInAreaItem().unlockedWhenEditing()
+
     override fun contentProvider(id: Int, context: InventoryInterfaceContext): GridSlotData? {
         val (gridX, gridY) = context.contentIdToGrid(id)
         val key = pendingKey(gridX, gridY)
@@ -112,3 +114,6 @@ object InventoryInterface : ScrollInterface<InventoryInterfaceContext, GridSlotD
         }
     }
 }
+
+private fun InterfaceItem<InventoryInterfaceContext>.unlockedWhenEditing(): InterfaceItem<InventoryInterfaceContext> =
+    unlockedWhen { context.mode == InterfaceMode.EDITING }
