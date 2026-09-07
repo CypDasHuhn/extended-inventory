@@ -46,7 +46,7 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
             .clickInAreaItem()
             .unlockedWhenEditing()
 
-    override fun contentProvider(id: Int, context: IIC): GridSlotData? {
+    override fun contentProvider(id: Int, context: IIC): GridSlotData {
         val (gridX, gridY) = context.contentIdToGrid(id)
         val key = pendingKey(gridX, gridY)
 
@@ -87,10 +87,7 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
     override fun contentDisplay(
         data: GridSlotData,
         context: IIC
-    ): InterfaceInfo<IIC>.() -> ItemStack =
-        {
-            data.item ?: ItemStack(Material.AIR)
-        }
+    ): InterfaceInfo<IIC>.() -> ItemStack = { data.item ?: ItemStack(Material.AIR) }
 
     override fun contentClick(data: GridSlotData, context: IIC): ClickInfo<IIC>.() -> Unit =
         {
@@ -106,11 +103,13 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
         }
 
     override fun getInterfaceItems(): List<InterfaceItem<IIC>> =
-        chromeItems() +
-            editSessionItems() +
-            anchorActionItems() +
-            groupOperationItems() +
+        listOf(
+            chromeItems(),
+            editSessionItems(),
+            anchorActionItems(),
+            groupOperationItems(),
             groupSelectionOverlayItems()
+        ).flatten()
 
     private fun ClickInfo<IIC>.handleNormalClick(data: GridSlotData) {
         if (data.isAnchor && data.anchorName != null) {
