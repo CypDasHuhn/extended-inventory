@@ -34,7 +34,7 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
                     InterfaceMode.MATERIALIZING_ANCHOR -> " <light_purple>[Materialize Anchor]"
                     else -> ""
                 }
-            mm("<white><bold>Extended Inventory$suffix")
+            mm("<white><bold>Extended Inventory$suffix <dark_gray><bold>(${ctx.centerX}, ${ctx.centerY + ctx.position})")
         }
         sizeFromRows(6)
     },
