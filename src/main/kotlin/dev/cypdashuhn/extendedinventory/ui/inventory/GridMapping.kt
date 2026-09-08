@@ -16,4 +16,4 @@ internal fun IIC.contentSlotToGrid(slot: Int): Pair<Int, Int> =
     worldAt(slot % GRID_COLUMNS, slot / GRID_COLUMNS + position)
 
 internal fun IIC.contentIdToGrid(id: Int): Pair<Int, Int> =
-    worldAt(id % GRID_COLUMNS, id / GRID_COLUMNS)
+    worldAt(id.mod(GRID_COLUMNS), id.floorDiv(GRID_COLUMNS))
