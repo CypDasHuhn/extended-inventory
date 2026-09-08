@@ -18,6 +18,12 @@ enum class InterfaceMode {
     GROUP_MOVE_TARGET,
 }
 
+enum class BarSection {
+    DEFAULT,
+    GROUPS,
+    ANCHORS,
+}
+
 class InventoryInterfaceContext(
     var profileId: Int,
     var centerX: Int = 0,
@@ -30,6 +36,7 @@ class InventoryInterfaceContext(
     var targetPreviewPositions: Set<Pair<Int, Int>> = emptySet(),
     var groupDeleteConfirmed: Boolean = false,
     var groupMoveConfirmed: Boolean = false,
+    var section: BarSection = BarSection.DEFAULT,
 ) : ScrollContext()
 
 data class GridSlotData(
@@ -42,6 +49,9 @@ data class GridSlotData(
 
 internal val IIC.isIdle: Boolean
     get() = mode == InterfaceMode.NORMAL && cornerA == null && cornerB == null
+
+internal val IIC.isAnchorMode: Boolean
+    get() = mode == InterfaceMode.SETTING_ANCHOR || mode == InterfaceMode.MATERIALIZING_ANCHOR
 
 internal val IIC.isGroupMode: Boolean
     get() = mode in GROUP_SELECT_MODES

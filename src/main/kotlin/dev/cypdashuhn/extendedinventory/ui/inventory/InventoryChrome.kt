@@ -1,11 +1,10 @@
 package dev.cypdashuhn.extendedinventory.ui.inventory
 
-import dev.cypdashuhn.extendedinventory.ui.anchor.AnchorListContext
-import dev.cypdashuhn.extendedinventory.ui.anchor.AnchorListInterface
 import dev.cypdashuhn.extendedinventory.ui.profile.ProfileInterface
 import dev.cypdashuhn.extendedinventory.ui.profile.ProfileInterfaceContext
 import dev.cypdashuhn.extendedinventory.util.mm
 import dev.rooster.core.util.createItem
+import dev.rooster.ui.interfaces.ClickInfo
 import dev.rooster.ui.items.InterfaceItem
 import org.bukkit.Material
 
@@ -30,14 +29,31 @@ internal fun chromeItems(): List<InterfaceItem<IIC>> =
                 )
             ).onClick { ProfileInterface.openRefreshed(click.player, ProfileInterfaceContext()) },
         inventoryItem()
-            .atSlot(6, 7)
+            .atSlot(6, 2)
+            .usedWhen { context.isIdle && context.section == BarSection.DEFAULT }
             .displayAs(
                 createItem(
-                    Material.NAME_TAG,
-                    mm("<white>Anchors"),
-                    listOf(mm("<gray>View all anchors."))
+                    Material.HOPPER,
+                    mm("<white>Group Actions"),
+                    listOf(mm("<gray>Select, move or delete item regions."))
                 )
-            ).routeTo(AnchorListInterface) { AnchorListContext(context.profileId) },
+            ).onClick {
+                context.section = BarSection.GROUPS
+                InventoryInterface.openInventory(click.player, context)
+            },
+        inventoryItem()
+            .atSlot(6, 3)
+            .usedWhen { context.isIdle && context.section == BarSection.DEFAULT }
+            .displayAs(
+                createItem(
+                    Material.LEAD,
+                    mm("<white>Anchor Actions"),
+                    listOf(mm("<gray>Set or materialize anchors."))
+                )
+            ).onClick {
+                context.section = BarSection.ANCHORS
+                InventoryInterface.openInventory(click.player, context)
+            },
         inventoryItem()
             .atSlot(6, 8)
             .displayAs(
@@ -53,9 +69,30 @@ internal fun chromeItems(): List<InterfaceItem<IIC>> =
                 if (context.mode == InterfaceMode.EDITING) {
                     stagePendingEdits(click.player, context)
                 }
-                val step = if (click.event.click.isShiftClick) 5 else 1
-                val delta = if (click.event.click.isRightClick) -step else step
-                context.position = (context.position + delta).coerceAtLeast(0)
+                context.position += scrollDelta()
+                InventoryInterface.openInventory(click.player, context)
+            },
+        inventoryItem()
+            .atSlot(6, 5)
+            .displayAs(
+                createItem(
+                    Material.LEVER,
+                    mm("<white>Scroll Horizontal"),
+                    listOf(
+                        mm("<gray>Left-click: shift view east"),
+                        mm("<gray>Right-click: shift view west"),
+                    )
+                )
+            ).onClick {
+                if (context.mode == InterfaceMode.EDITING) {
+                    stagePendingEdits(click.player, context)
+                }
+                context.centerX += scrollDelta()
                 InventoryInterface.openInventory(click.player, context)
             },
     )
+
+private fun ClickInfo<IIC>.scrollDelta(): Int {
+    val step = if (click.event.click.isShiftClick) 5 else 1
+    return if (click.event.click.isRightClick) -step else step
+}

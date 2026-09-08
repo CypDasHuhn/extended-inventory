@@ -110,6 +110,7 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
         open()
         step("open")
 
+        step("open group actions (47)") { click(47) }
         step("click group delete (47)") { click(47) }
         assertEquals(InterfaceMode.GROUP_DELETE_A, context().mode)
 
@@ -137,6 +138,7 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
         open()
         step("open")
 
+        step("open group actions (47)") { click(47) }
         step("click group move (48)") { click(48) }
         assertEquals(InterfaceMode.GROUP_MOVE_A, context().mode)
 

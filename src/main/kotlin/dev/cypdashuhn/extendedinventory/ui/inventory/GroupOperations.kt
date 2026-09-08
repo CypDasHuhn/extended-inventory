@@ -14,7 +14,7 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
     listOf(
         inventoryItem()
             .atSlot(6, 2)
-            .usedWhen { context.isIdle }
+            .usedWhen { context.isIdle && context.section == BarSection.GROUPS }
             .displayAs(
                 createItem(
                     Material.LAVA_BUCKET,
@@ -31,7 +31,7 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
             },
         inventoryItem()
             .atSlot(6, 3)
-            .usedWhen { context.isIdle }
+            .usedWhen { context.isIdle && context.section == BarSection.GROUPS }
             .displayAs(
                 createItem(
                     Material.PISTON,
@@ -47,17 +47,26 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
                 InventoryInterface.openInventory(click.player, context)
             },
         inventoryItem()
-            .atSlot(6, 5)
-            .usedWhen { context.isGroupMode }
-            .displayAs(
+            .atSlot(6, 4)
+            .usedWhen {
+                context.section == BarSection.GROUPS &&
+                    (
+                        context.isIdle || context.isGroupMode || context.cornersSet ||
+                            context.targetSet
+                    )
+            }.displayAs(
                 createItem(
-                    Material.BARRIER,
-                    mm("<red>Cancel"),
-                    listOf(mm("<gray>Exit group mode."))
+                    Material.ARROW,
+                    mm("<white>Back"),
+                    listOf(
+                        mm("<gray>Return to the default bar."),
+                        mm("<gray>Cancels any pending selection."),
+                    )
                 )
             ).onClick {
                 context.clearGroupSelection()
                 context.mode = InterfaceMode.NORMAL
+                context.section = BarSection.DEFAULT
                 InventoryInterface.openInventory(click.player, context)
             },
         inventoryItem()

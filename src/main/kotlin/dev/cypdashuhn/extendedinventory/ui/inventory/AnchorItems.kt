@@ -4,6 +4,8 @@ import dev.cypdashuhn.extendedinventory.db.AnchorManager
 import dev.cypdashuhn.extendedinventory.db.SlotCache
 import dev.cypdashuhn.extendedinventory.hotbar.HotbarManager
 import dev.cypdashuhn.extendedinventory.ui.ChatInputManager
+import dev.cypdashuhn.extendedinventory.ui.anchor.AnchorListContext
+import dev.cypdashuhn.extendedinventory.ui.anchor.AnchorListInterface
 import dev.cypdashuhn.extendedinventory.util.mm
 import dev.rooster.core.util.createItem
 import dev.rooster.ui.interfaces.ClickInfo
@@ -13,8 +15,8 @@ import org.bukkit.Material
 internal fun anchorActionItems(): List<InterfaceItem<IIC>> =
     listOf(
         inventoryItem()
-            .atSlot(6, 5)
-            .usedWhen { context.isIdle }
+            .atSlot(6, 2)
+            .usedWhen { context.isIdle && context.section == BarSection.ANCHORS }
             .displayAs(
                 createItem(
                     Material.ENDER_PEARL,
@@ -26,8 +28,8 @@ internal fun anchorActionItems(): List<InterfaceItem<IIC>> =
                 InventoryInterface.openInventory(click.player, context)
             },
         inventoryItem()
-            .atSlot(6, 6)
-            .usedWhen { context.isIdle }
+            .atSlot(6, 3)
+            .usedWhen { context.isIdle && context.section == BarSection.ANCHORS }
             .displayAs(
                 createItem(
                     Material.ITEM_FRAME,
@@ -36,6 +38,35 @@ internal fun anchorActionItems(): List<InterfaceItem<IIC>> =
                 )
             ).onClick {
                 context.mode = InterfaceMode.MATERIALIZING_ANCHOR
+                InventoryInterface.openInventory(click.player, context)
+            },
+        inventoryItem()
+            .atSlot(6, 7)
+            .usedWhen { context.section == BarSection.ANCHORS }
+            .displayAs(
+                createItem(
+                    Material.NAME_TAG,
+                    mm("<white>Anchors Overview"),
+                    listOf(mm("<gray>View all anchors."))
+                )
+            ).routeTo(AnchorListInterface) { AnchorListContext(context.profileId) },
+        inventoryItem()
+            .atSlot(6, 4)
+            .usedWhen {
+                context.section == BarSection.ANCHORS && (context.isIdle || context.isAnchorMode)
+            }
+            .displayAs(
+                createItem(
+                    Material.ARROW,
+                    mm("<white>Back"),
+                    listOf(
+                        mm("<gray>Return to the default bar."),
+                        mm("<gray>Cancels any pending anchor action."),
+                    )
+                )
+            ).onClick {
+                context.mode = InterfaceMode.NORMAL
+                context.section = BarSection.DEFAULT
                 InventoryInterface.openInventory(click.player, context)
             },
     )
