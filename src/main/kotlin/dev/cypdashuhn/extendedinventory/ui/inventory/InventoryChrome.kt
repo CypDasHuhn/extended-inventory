@@ -11,15 +11,6 @@ import org.bukkit.Material
 internal fun chromeItems(): List<InterfaceItem<IIC>> =
     listOf(
         inventoryItem()
-            .atSlot(6, 1)
-            .displayAs(
-                createItem(
-                    Material.BARRIER,
-                    mm("<red>Back"),
-                    listOf(mm("<gray>Close the interface."))
-                )
-            ).onClick { click.player.closeInventory() },
-        inventoryItem()
             .atSlot(6, 0)
             .displayAs(
                 createItem(
@@ -29,7 +20,7 @@ internal fun chromeItems(): List<InterfaceItem<IIC>> =
                 )
             ).onClick { ProfileInterface.openRefreshed(click.player, ProfileInterfaceContext()) },
         inventoryItem()
-            .atSlot(6, 2)
+            .atSlot(6, 1)
             .usedWhen { context.isIdle && context.section == BarSection.DEFAULT }
             .displayAs(
                 createItem(
@@ -42,7 +33,7 @@ internal fun chromeItems(): List<InterfaceItem<IIC>> =
                 InventoryInterface.openInventory(click.player, context)
             },
         inventoryItem()
-            .atSlot(6, 3)
+            .atSlot(6, 2)
             .usedWhen { context.isIdle && context.section == BarSection.DEFAULT }
             .displayAs(
                 createItem(
@@ -73,10 +64,10 @@ internal fun chromeItems(): List<InterfaceItem<IIC>> =
                 InventoryInterface.openInventory(click.player, context)
             },
         inventoryItem()
-            .atSlot(6, 5)
+            .atSlot(6, 7)
             .displayAs(
                 createItem(
-                    Material.LEVER,
+                    Material.COMPASS,
                     mm("<white>Scroll Horizontal"),
                     listOf(
                         mm("<gray>Left-click: shift view east"),

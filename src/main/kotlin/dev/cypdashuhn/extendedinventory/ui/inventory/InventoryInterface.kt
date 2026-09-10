@@ -17,8 +17,8 @@ import dev.rooster.ui.items.InterfaceItem
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
-object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
-    handler { IIC(0) },
+//region Options
+val options =
     ScrollInterfaceOptions<IIC>().apply {
         scrollerObject = ScrollerObject.None()
         inventoryTitle = { _, ctx ->
@@ -34,10 +34,16 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
                     InterfaceMode.MATERIALIZING_ANCHOR -> " <light_purple>[Materialize Anchor]"
                     else -> ""
                 }
-            mm("<white><bold>Extended Inventory$suffix <dark_gray><bold>(${ctx.centerX}, ${ctx.centerY + ctx.position})")
+            mm(
+                "<white><bold>Extended Inventory$suffix <dark_gray><bold>(${ctx.centerX}, ${ctx.centerY + ctx.position})"
+            )
         }
         sizeFromRows(6)
-    },
+    }
+
+object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
+    handler { IIC(0) },
+    options
 ) {
     override fun contentItem(): InterfaceItem<IIC> = super.contentItem().unlockedWhenEditing()
 
