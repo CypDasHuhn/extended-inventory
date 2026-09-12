@@ -118,11 +118,11 @@ object AnchorManager {
     fun delete(id: Int) =
         transaction {
             val anchor = AnchorEntry.findById(id) ?: return@transaction
-            InventorySlotsRemoveAnchorRefs(anchor.profileId, id)
+            inventorySlotsRemoveAnchorRefs(anchor.profileId, id)
             anchor.delete()
         }
 
-    private fun InventorySlotsRemoveAnchorRefs(profileId: Int, anchorId: Int) =
+    private fun inventorySlotsRemoveAnchorRefs(profileId: Int, anchorId: Int) =
         transaction {
             InventoryManager.InventorySlots.update({
                 (InventoryManager.InventorySlots.profileId eq profileId) and
