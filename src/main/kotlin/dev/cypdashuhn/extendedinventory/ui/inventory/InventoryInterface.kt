@@ -17,23 +17,13 @@ import dev.rooster.ui.items.InterfaceItem
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
-//region Options
+typealias Item = InterfaceItem<IIC>
+
 val options =
     ScrollInterfaceOptions<IIC>().apply {
         scrollerObject = ScrollerObject.None()
         inventoryTitle = { _, ctx ->
-            val suffix =
-                when (ctx.mode) {
-                    InterfaceMode.GROUP_DELETE_A -> " <dark_red>[Delete: pick corner A]"
-                    InterfaceMode.GROUP_DELETE_B -> " <dark_red>[Delete: pick corner B]"
-                    InterfaceMode.GROUP_MOVE_A -> " <green>[Move: pick corner A]"
-                    InterfaceMode.GROUP_MOVE_B -> " <green>[Move: pick corner B]"
-                    InterfaceMode.GROUP_MOVE_TARGET -> " <green>[Move: pick target]"
-                    InterfaceMode.EDITING -> " <yellow>[Editing]"
-                    InterfaceMode.SETTING_ANCHOR -> " <aqua>[Set Anchor]"
-                    InterfaceMode.MATERIALIZING_ANCHOR -> " <light_purple>[Materialize Anchor]"
-                    else -> ""
-                }
+            val suffix = ctx.mode.suffix
             mm(
                 "<white><bold>Extended Inventory$suffix <dark_gray><bold>(${ctx.centerX}, ${ctx.centerY + ctx.position})"
             )
@@ -45,9 +35,9 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
     handler { IIC(0) },
     options
 ) {
-    override fun contentItem(): InterfaceItem<IIC> = super.contentItem().unlockedWhenEditing()
+    override fun contentItem(): Item = super.contentItem().unlockedWhenEditing()
 
-    override fun clickInAreaItem(): InterfaceItem<IIC> =
+    override fun clickInAreaItem(): Item =
         super
             .clickInAreaItem()
             .unlockedWhenEditing()
@@ -108,7 +98,7 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
             }
         }
 
-    override fun getInterfaceItems(): List<InterfaceItem<IIC>> =
+    override fun getInterfaceItems(): List<Item> =
         listOf(
             chromeItems(),
             editSessionItems(),
@@ -135,8 +125,7 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
     }
 }
 
-private fun InterfaceItem<IIC>.unlockedWhenEditing(): InterfaceItem<IIC> =
+private fun Item.unlockedWhenEditing(): Item =
     unlockedWhen {
-        context.mode ==
-            InterfaceMode.EDITING
+        context.mode == InterfaceMode.EDITING
     }

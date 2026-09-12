@@ -6,16 +6,20 @@ import org.bukkit.inventory.ItemStack
 
 typealias IIC = InventoryInterfaceContext
 
-enum class InterfaceMode {
+enum class InterfaceMode(
+    val suffix: String = "",
+    val isAnchorMode: Boolean = false,
+    val isGroupMode: Boolean = false,
+) {
     NORMAL,
-    EDITING,
-    SETTING_ANCHOR,
-    MATERIALIZING_ANCHOR,
-    GROUP_DELETE_A,
-    GROUP_DELETE_B,
-    GROUP_MOVE_A,
-    GROUP_MOVE_B,
-    GROUP_MOVE_TARGET,
+    EDITING(suffix = " <yellow>[Editing]"),
+    SETTING_ANCHOR(suffix = " <aqua>[Set Anchor]", isAnchorMode = true),
+    MATERIALIZING_ANCHOR(suffix = " <light_purple>[Materialize Anchor]", isAnchorMode = true),
+    GROUP_DELETE_A(suffix = " <dark_red>[Delete: pick corner A]", isGroupMode = true),
+    GROUP_DELETE_B(suffix = " <dark_red>[Delete: pick corner B]", isGroupMode = true),
+    GROUP_MOVE_A(suffix = " <green>[Move: pick corner A]", isGroupMode = true),
+    GROUP_MOVE_B(suffix = " <green>[Move: pick corner B]", isGroupMode = true),
+    GROUP_MOVE_TARGET(suffix = " <green>[Move: pick target]", isGroupMode = true),
 }
 
 enum class BarSection {
@@ -49,20 +53,5 @@ data class GridSlotData(
 
 internal val IIC.isIdle: Boolean
     get() = mode == InterfaceMode.NORMAL && cornerA == null && cornerB == null
-
-internal val IIC.isAnchorMode: Boolean
-    get() = mode == InterfaceMode.SETTING_ANCHOR || mode == InterfaceMode.MATERIALIZING_ANCHOR
-
-internal val IIC.isGroupMode: Boolean
-    get() = mode in GROUP_SELECT_MODES
-
-private val GROUP_SELECT_MODES =
-    setOf(
-        InterfaceMode.GROUP_DELETE_A,
-        InterfaceMode.GROUP_DELETE_B,
-        InterfaceMode.GROUP_MOVE_A,
-        InterfaceMode.GROUP_MOVE_B,
-        InterfaceMode.GROUP_MOVE_TARGET,
-    )
 
 internal fun inventoryItem(): InterfaceItem<IIC> = InterfaceItem(IIC::class)

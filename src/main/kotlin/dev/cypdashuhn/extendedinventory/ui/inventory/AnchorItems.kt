@@ -53,7 +53,7 @@ internal fun anchorActionItems(): List<InterfaceItem<IIC>> =
         inventoryItem()
             .atSlot(6, 4)
             .usedWhen {
-                context.section == BarSection.ANCHORS && (context.isIdle || context.isAnchorMode)
+                context.section == BarSection.ANCHORS && (context.isIdle || context.mode.isAnchorMode)
             }
             .displayAs(
                 createItem(

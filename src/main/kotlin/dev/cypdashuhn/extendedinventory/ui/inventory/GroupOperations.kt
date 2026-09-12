@@ -51,7 +51,7 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
             .usedWhen {
                 context.section == BarSection.GROUPS &&
                     (
-                        context.isIdle || context.isGroupMode || context.cornersSet ||
+                        context.isIdle || context.mode.isGroupMode || context.cornersSet ||
                             context.targetSet
                     )
             }.displayAs(
@@ -221,7 +221,7 @@ internal fun IIC.clearGroupSelection() {
 }
 
 internal val IIC.cornersSet: Boolean
-    get() = cornerA != null && cornerB != null && !isGroupMode
+    get() = cornerA != null && cornerB != null && !mode.isGroupMode
 
 internal val IIC.targetSet: Boolean
     get() = cornersSet && targetCorner != null
