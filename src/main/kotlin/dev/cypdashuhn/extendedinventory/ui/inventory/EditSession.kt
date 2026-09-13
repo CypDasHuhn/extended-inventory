@@ -15,7 +15,7 @@ internal fun editSessionItems(): List<InterfaceItem<IIC>> =
     listOf(
         inventoryItem()
             .atSlot(6, 4)
-            .usedWhen { context.isIdle }
+            .usedWhen { context.isIdle && context.section == BarSection.DEFAULT }
             .displayAs(
                 createItem(
                     Material.BOOK,
