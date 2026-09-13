@@ -95,6 +95,8 @@ object InventoryInterface : ScrollInterface<IIC, GridSlotData>(
                 InterfaceMode.GROUP_DELETE_A, InterfaceMode.GROUP_DELETE_B -> pickDeleteCorner(data)
                 InterfaceMode.GROUP_MOVE_A, InterfaceMode.GROUP_MOVE_B -> pickMoveCorner(data)
                 InterfaceMode.GROUP_MOVE_TARGET -> pickMoveTarget(data)
+                InterfaceMode.GROUP_COPY_A, InterfaceMode.GROUP_COPY_B -> pickCopyCorner(data)
+                InterfaceMode.GROUP_COPY_TARGET -> pickMoveTarget(data)
             }
         }
 

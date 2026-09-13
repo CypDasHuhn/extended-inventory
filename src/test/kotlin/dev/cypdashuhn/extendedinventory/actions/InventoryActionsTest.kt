@@ -139,4 +139,40 @@ class InventoryActionsTest {
         val slots = InventoryActions.getRegionSlots(profileId, 0, 0, 4, 4)
         assertEquals(2, slots.size)
     }
+
+    @Test
+    fun `groupCopy duplicates item ids to the target region while keeping the source`() {
+        val stone = TestDatabase.insertRawItem()
+        val dirt = TestDatabase.insertRawItem("DIRT")
+        InventoryManager.setItem(profileId, 0, 0, stone)
+        InventoryManager.setItem(profileId, 1, 0, dirt)
+
+        val copied = InventoryActions.groupCopy(profileId, 0, 0, 1, 0, 10, 20)
+
+        assertTrue(copied)
+        assertEquals(stone, InventoryManager.getSlot(profileId, 0, 0)!!.itemId)
+        assertEquals(dirt, InventoryManager.getSlot(profileId, 1, 0)!!.itemId)
+        assertEquals(stone, InventoryManager.getSlot(profileId, 10, 20)!!.itemId)
+        assertEquals(dirt, InventoryManager.getSlot(profileId, 11, 20)!!.itemId)
+    }
+
+    @Test
+    fun `groupCopy with no items returns false`() {
+        val copied = InventoryActions.groupCopy(profileId, 0, 0, 5, 5, 50, 50)
+        assertFalse(copied)
+    }
+
+    @Test
+    fun `groupCopy offset is relative to the region min corner`() {
+        val stone = TestDatabase.insertRawItem()
+        val dirt = TestDatabase.insertRawItem("DIRT")
+        InventoryManager.setItem(profileId, 0, 0, stone)
+        InventoryManager.setItem(profileId, 1, 1, dirt)
+
+        val copied = InventoryActions.groupCopy(profileId, 1, 1, 0, 0, 10, 10)
+
+        assertTrue(copied)
+        assertEquals(stone, InventoryManager.getSlot(profileId, 10, 10)!!.itemId)
+        assertEquals(dirt, InventoryManager.getSlot(profileId, 11, 11)!!.itemId)
+    }
 }

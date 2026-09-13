@@ -110,7 +110,7 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
         open()
         step("open")
 
-        step("open group actions (47)") { click(47) }
+        step("open group actions (46)") { click(46) }
         step("click group delete (47)") { click(47) }
         assertEquals(InterfaceMode.GROUP_DELETE_A, context().mode)
 
@@ -138,7 +138,7 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
         open()
         step("open")
 
-        step("open group actions (47)") { click(47) }
+        step("open group actions (46)") { click(46) }
         step("click group move (48)") { click(48) }
         assertEquals(InterfaceMode.GROUP_MOVE_A, context().mode)
 
@@ -160,6 +160,60 @@ abstract class InventoryInterfaceEndToEndTest : UiHarness() {
         assertNull(UiHarness.dumpItem(1, 0, 1), "source (0,1) should be empty after move")
         assertEquals(Material.STONE, UiHarness.dumpItem(1, 2, 0), "STONE should move to (2,0)")
         assertEquals(Material.DIRT, UiHarness.dumpItem(1, 2, 1), "DIRT should move to (2,1)")
+    }
+
+    @Test
+    fun `group copy duplicates a region and keeps the source`() {
+        InventoryManagerSeed.seed(1, 0, 0, Material.STONE)
+        InventoryManagerSeed.seed(1, 0, 1, Material.DIRT)
+
+        open()
+        step("open")
+
+        step("open group actions (46)") { click(46) }
+        step("click group copy (49)") { click(49) }
+        assertEquals(InterfaceMode.GROUP_COPY_A, context().mode)
+
+        step("pick corner A at (0,0) -> slot 22") { click(22) }
+        assertEquals(InterfaceMode.GROUP_COPY_B, context().mode)
+
+        step("pick corner B at (0,1) -> slot 31") { click(31) }
+        assertEquals(InterfaceMode.GROUP_COPY_TARGET, context().mode)
+
+        step("pick target at (2,0) -> slot 24") { click(24) }
+        assertEquals(InterfaceMode.NORMAL, context().mode)
+
+        step("confirm copy (51)") { click(51) }
+        assertTrue(context().groupCopyConfirmed)
+
+        step("final copy (51)") { click(51) }
+
+        assertEquals(Material.STONE, UiHarness.dumpItem(1, 0, 0), "source (0,0) should remain")
+        assertEquals(Material.DIRT, UiHarness.dumpItem(1, 0, 1), "source (0,1) should remain")
+        assertEquals(Material.STONE, UiHarness.dumpItem(1, 2, 0), "STONE should be copied to (2,0)")
+        assertEquals(Material.DIRT, UiHarness.dumpItem(1, 2, 1), "DIRT should be copied to (2,1)")
+    }
+
+    @Test
+    fun `edit button is hidden in group and anchor sections`() {
+        open()
+        step("open")
+
+        step("open group actions (46)") { click(46) }
+        assertEquals(
+            Material.PAPER,
+            slotMaterial(49),
+            "group section slot 49 should be Group Copy, not the Edit Mode book"
+        )
+
+        step("back to default (50)") { click(50) }
+
+        step("open anchor actions (47)") { click(47) }
+        assertEquals(
+            Material.ARROW,
+            slotMaterial(49),
+            "anchor section slot 49 should be Back, not the Edit Mode book"
+        )
     }
 
     @Test

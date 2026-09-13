@@ -20,6 +20,15 @@ enum class InterfaceMode(
     GROUP_MOVE_A(suffix = " <green>[Move: pick corner A]", isGroupMode = true),
     GROUP_MOVE_B(suffix = " <green>[Move: pick corner B]", isGroupMode = true),
     GROUP_MOVE_TARGET(suffix = " <green>[Move: pick target]", isGroupMode = true),
+    GROUP_COPY_A(suffix = " <blue>[Copy: pick corner A]", isGroupMode = true),
+    GROUP_COPY_B(suffix = " <blue>[Copy: pick corner B]", isGroupMode = true),
+    GROUP_COPY_TARGET(suffix = " <blue>[Copy: pick target]", isGroupMode = true),
+}
+
+enum class GroupOperation {
+    DELETE,
+    MOVE,
+    COPY,
 }
 
 enum class BarSection {
@@ -40,6 +49,8 @@ class InventoryInterfaceContext(
     var targetPreviewPositions: Set<Pair<Int, Int>> = emptySet(),
     var groupDeleteConfirmed: Boolean = false,
     var groupMoveConfirmed: Boolean = false,
+    var groupCopyConfirmed: Boolean = false,
+    var groupOperation: GroupOperation? = null,
     var section: BarSection = BarSection.DEFAULT,
 ) : ScrollContext()
 

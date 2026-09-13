@@ -85,6 +85,30 @@ object InventoryActions {
         return true
     }
 
+    fun groupCopy(
+        profileId: Int,
+        x1: Int,
+        y1: Int,
+        x2: Int,
+        y2: Int,
+        targetX: Int,
+        targetY: Int
+    ): Boolean {
+        val r = region(x1, y1, x2, y2)
+        val sourceSlots = InventoryManager.getRegion(profileId, x1, y1, x2, y2)
+
+        val copies =
+            sourceSlots.mapNotNull { slot ->
+                val itemId = slot.itemId ?: return@mapNotNull null
+                Triple(targetX + (slot.x - r.minX), targetY + (slot.y - r.minY), itemId)
+            }
+
+        if (copies.isEmpty()) return false
+
+        SlotCache.batchSetItems(profileId, copies)
+        return true
+    }
+
     fun getRegionSlots(
         profileId: Int,
         x1: Int,

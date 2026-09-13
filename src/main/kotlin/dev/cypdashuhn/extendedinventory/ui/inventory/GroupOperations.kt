@@ -26,6 +26,7 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
                 )
             ).onClick {
                 context.clearGroupSelection()
+                context.groupOperation = GroupOperation.DELETE
                 context.mode = InterfaceMode.GROUP_DELETE_A
                 InventoryInterface.openInventory(click.player, context)
             },
@@ -43,11 +44,30 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
                 )
             ).onClick {
                 context.clearGroupSelection()
+                context.groupOperation = GroupOperation.MOVE
                 context.mode = InterfaceMode.GROUP_MOVE_A
                 InventoryInterface.openInventory(click.player, context)
             },
         inventoryItem()
             .atSlot(6, 4)
+            .usedWhen { context.isIdle && context.section == BarSection.GROUPS }
+            .displayAs(
+                createItem(
+                    Material.PAPER,
+                    mm("<aqua>Group Copy"),
+                    listOf(
+                        mm("<gray>Select two corners for source,"),
+                        mm("<gray>then a third for target."),
+                    )
+                )
+            ).onClick {
+                context.clearGroupSelection()
+                context.groupOperation = GroupOperation.COPY
+                context.mode = InterfaceMode.GROUP_COPY_A
+                InventoryInterface.openInventory(click.player, context)
+            },
+        inventoryItem()
+            .atSlot(6, 5)
             .usedWhen {
                 context.section == BarSection.GROUPS &&
                     (
@@ -72,7 +92,7 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
         inventoryItem()
             .atSlot(6, 6)
             .priority(10)
-            .usedWhen { context.cornersSet && !context.targetSet && !context.groupDeleteConfirmed }
+            .usedWhen { context.groupOperation == GroupOperation.DELETE && context.cornersSet && !context.targetSet && !context.groupDeleteConfirmed }
             .displayAs(
                 createItem(
                     Material.LAVA_BUCKET,
@@ -89,7 +109,7 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
         inventoryItem()
             .atSlot(6, 6)
             .priority(11)
-            .usedWhen { context.cornersSet && !context.targetSet && context.groupDeleteConfirmed }
+            .usedWhen { context.groupOperation == GroupOperation.DELETE && context.cornersSet && !context.targetSet && context.groupDeleteConfirmed }
             .displayAs(
                 createItem(
                     Material.LAVA_BUCKET,
@@ -113,7 +133,7 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
         inventoryItem()
             .atSlot(6, 6)
             .priority(10)
-            .usedWhen { context.targetSet && !context.groupMoveConfirmed }
+            .usedWhen { context.groupOperation == GroupOperation.MOVE && context.targetSet && !context.groupMoveConfirmed }
             .displayAs(
                 createItem(
                     Material.PISTON,
@@ -130,7 +150,7 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
         inventoryItem()
             .atSlot(6, 6)
             .priority(11)
-            .usedWhen { context.targetSet && context.groupMoveConfirmed }
+            .usedWhen { context.groupOperation == GroupOperation.MOVE && context.targetSet && context.groupMoveConfirmed }
             .displayAs(
                 createItem(
                     Material.PISTON,
@@ -146,6 +166,56 @@ internal fun groupOperationItems(): List<InterfaceItem<IIC>> =
                 val t = context.targetCorner!!
                 InventoryActions
                     .groupMove(
+                        context.profileId,
+                        a.first,
+                        a.second,
+                        b.first,
+                        b.second,
+                        t.first,
+                        t.second
+                    )
+                SlotCache.invalidateProfile(context.profileId)
+                context.clearGroupSelection()
+                context.mode = InterfaceMode.NORMAL
+                HotbarManager.mirrorToHotbar(click.player)
+                InventoryInterface.openInventory(click.player, context)
+            },
+        inventoryItem()
+            .atSlot(6, 6)
+            .priority(10)
+            .usedWhen { context.groupOperation == GroupOperation.COPY && context.targetSet && !context.groupCopyConfirmed }
+            .displayAs(
+                createItem(
+                    Material.PAPER,
+                    mm("<aqua><bold>COPY REGION"),
+                    listOf(
+                        mm("<gray>Copy items to target region."),
+                        mm("<aqua>Click again to confirm."),
+                    )
+                )
+            ).onClick {
+                context.groupCopyConfirmed = true
+                InventoryInterface.openInventory(click.player, context)
+            },
+        inventoryItem()
+            .atSlot(6, 6)
+            .priority(11)
+            .usedWhen { context.groupOperation == GroupOperation.COPY && context.targetSet && context.groupCopyConfirmed }
+            .displayAs(
+                createItem(
+                    Material.PAPER,
+                    mm("<aqua><bold>CONFIRM COPY"),
+                    listOf(
+                        mm("<gray>Copy items to target."),
+                        mm("<aqua><bold>Click to execute."),
+                    )
+                )
+            ).onClick {
+                val a = context.cornerA!!
+                val b = context.cornerB!!
+                val t = context.targetCorner!!
+                InventoryActions
+                    .groupCopy(
                         context.profileId,
                         a.first,
                         a.second,
@@ -218,6 +288,8 @@ internal fun IIC.clearGroupSelection() {
     targetPreviewPositions = emptySet()
     groupDeleteConfirmed = false
     groupMoveConfirmed = false
+    groupCopyConfirmed = false
+    groupOperation = null
 }
 
 internal val IIC.cornersSet: Boolean
@@ -252,6 +324,17 @@ internal fun ClickInfo<IIC>.pickMoveCorner(data: GridSlotData) {
     } else {
         context.cornerB = data.x to data.y
         context.mode = InterfaceMode.GROUP_MOVE_TARGET
+    }
+    InventoryInterface.openInventory(click.player, context)
+}
+
+internal fun ClickInfo<IIC>.pickCopyCorner(data: GridSlotData) {
+    if (context.cornerA == null) {
+        context.cornerA = data.x to data.y
+        context.mode = InterfaceMode.GROUP_COPY_B
+    } else {
+        context.cornerB = data.x to data.y
+        context.mode = InterfaceMode.GROUP_COPY_TARGET
     }
     InventoryInterface.openInventory(click.player, context)
 }
